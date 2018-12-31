@@ -1,0 +1,58 @@
+﻿<Page
+    x:Class="GrammarAnalyzer.LRAnalysisPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GrammarAnalyzer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:data="using:GrammarAnalyzer.Models"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <RelativePanel Grid.Row="0"
+                       Margin="5"
+                       BorderBrush="AliceBlue"
+                       BorderThickness="2">
+        <TextBlock Name="DFAInfo"
+                       Text="LR(1)项目集"
+                       Style="{ThemeResource TitleTextBlockStyle}"
+                       Margin="10"/>
+
+        <Button Name="ToSheet"
+                FontFamily="Segoe MDL2 Assets"
+                Content="&#xE0AB;"
+                FontSize="24"
+                Background="White"
+                BorderThickness="0"
+                RelativePanel.AlignRightWithPanel="True"
+                Click="ToSheet_Click"
+                Margin="10,10,20,10"/>
+
+        <ProgressRing Name="WaitForLRDeductions"
+                      IsActive="True"
+                      Height="100"
+                      Width="100"
+                      RelativePanel.Below="DFAInfo"
+                      Margin="10"/>
+
+        <GridView RelativePanel.Below="DFAInfo"
+                      Margin="5"
+                      ItemsSource="{x:Bind LRDeductions}">
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="data:DeductionViewer">
+                    <ScrollViewer VerticalScrollBarVisibility="Visible"
+                                  HorizontalScrollBarVisibility="Visible"
+                                  Height="240"
+                                  Width="192"
+                                  BorderBrush="AliceBlue"
+                                  BorderThickness="2">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="{x:Bind Id}" FontSize="36" Margin="10" />
+                            <TextBlock Text="{x:Bind Description}" FontSize="24" Margin="10" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+    </RelativePanel>
+</Page>

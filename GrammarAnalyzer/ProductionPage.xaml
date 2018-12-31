@@ -1,0 +1,277 @@
+﻿<Page
+    x:Class="GrammarAnalyzer.ProductionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GrammarAnalyzer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:data="using:GrammarAnalyzer.Models"
+    xmlns:con="using:GrammarAnalyzer.Converters"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <con:CandidateConverter x:Key="CConverter" />
+        <con:NonterminalConverter x:Key="NConverter" />
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <RelativePanel Grid.Row="0"
+                       Margin="5"
+                       BorderBrush="AliceBlue"
+                       BorderThickness="2">
+            <TextBlock Name="ProductionInfo" 
+                       Text="产生式"
+                       Style="{ThemeResource TitleTextBlockStyle}"
+                       Margin="10"/>
+
+            <Button Name="ToLR"
+                    FontSize="24"
+                    Content="&#xE0AB;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Background="White"
+                    BorderThickness="0"
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.AlignVerticalCenterWith="ProductionInfo"
+                    Margin="10,0,20,0"
+                    Click="ToLR_Click">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout>
+                        <TextBlock Text="产生式不能为空"
+                                   Foreground="DarkRed" />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+            <TextBlock Text="LR(1)"
+                       FontSize="18"
+                       Margin="10,0,20,0"
+                       RelativePanel.Below="ToLR"
+                       RelativePanel.AlignLeftWith="ToLR"/>
+
+            <Button Name="ToSLR"
+                    FontSize="24"
+                    Content="&#xE0AB;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Background="White"
+                    BorderThickness="0"
+                    RelativePanel.LeftOf="ToLR"
+                    RelativePanel.AlignVerticalCenterWith="ProductionInfo"
+                    Margin="10,0,20,0"
+                    Click="ToSLR_Click">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout>
+                        <TextBlock Text="产生式不能为空"
+                                   Foreground="DarkRed" />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+            <TextBlock Text="SLR(1)"
+                       FontSize="18"
+                       Margin="10,0,20,0"
+                       RelativePanel.Below="ToSLR"
+                       RelativePanel.AlignLeftWith="ToSLR"/>
+
+
+            <Button Name="ToLL"
+                    FontSize="24"
+                    Content="&#xE0AB;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Background="White"
+                    BorderThickness="0"
+                    RelativePanel.LeftOf="ToSLR"
+                    RelativePanel.AlignVerticalCenterWith="ProductionInfo"
+                    Margin="10,0,20,0"
+                    Click="ToLL_Click">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout>
+                        <TextBlock Text="产生式不能为空"
+                                   Foreground="DarkRed" />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+            <TextBlock Text="LL(1)"
+                       FontSize="18"
+                       Margin="10,0,20,0"
+                       RelativePanel.Below="ToLL"
+                       RelativePanel.AlignLeftWith="ToLL"/>
+
+            <Button Name="ToSave"
+                    FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE118;"
+                    Margin="10,0,20,0"
+                    FontSize="24"
+                    RelativePanel.LeftOf="ToLL"
+                    RelativePanel.AlignVerticalCenterWith="ProductionInfo"
+                    Background="White"
+                    BorderThickness="0"
+                    Click="Save_Click">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout>
+                        <TextBlock Foreground="DarkRed"
+                                   Text="产生式不能为空" />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+            <TextBlock Text="保存"
+                       FontSize="18"
+                       Margin="10,0,20,0"
+                       RelativePanel.Below="ToSave"
+                       RelativePanel.AlignHorizontalCenterWith="ToSave"/>
+
+            <GridView RelativePanel.Below="ProductionInfo"
+                      ItemsSource="{x:Bind Productions}"
+                      Margin="10"
+                      IsItemClickEnabled="True"
+                      ItemClick="DeleteProductionViewer_Click">
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="data:ProductionViewer">
+                        <ScrollViewer HorizontalScrollBarVisibility="Visible"
+                                      HorizontalScrollMode="Auto">
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="5"
+                                        Tapped="DeleteProduction_Tapped">
+                                <FlyoutBase.AttachedFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="删除" Click="DeleteProduction_Click" />
+                                    </MenuFlyout>
+                                </FlyoutBase.AttachedFlyout>
+                                <TextBlock Text="{x:Bind Nonterminal,Converter={StaticResource NConverter}}"
+                                           FontSize="24"/>
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;" 
+                                          FontSize="20"
+                                          Margin="5,0,5,0"/>
+                                <TextBlock Text="{x:Bind Candidates,Converter={StaticResource CConverter}}"
+                                           FontSize="24"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </RelativePanel>
+
+        <RelativePanel Grid.Row="1"
+                       Margin="5"
+                       BorderBrush="AliceBlue"
+                       BorderThickness="2">
+            <GridView Name="NonterminalViewer"
+                      RelativePanel.AlignVerticalCenterWithPanel="True"
+                      Height="48"
+                      ItemsSource="{x:Bind StartNonterminal}"
+                      Margin="10">
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="data:TokenViewer">
+                        <TextBlock Text="{x:Bind Token }" 
+                                   FontSize="24"
+                                   Width="50"
+                                   Margin="5"/>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+
+            <Button Name="Conduction"
+                    FontFamily="Segoe MDL2 Assets"
+                    Background="White"
+                    BorderThickness="0"
+                    Click="Create_Click"
+                    FontSize="20"
+                    Content="&#xE0AB;" 
+                    RelativePanel.RightOf="NonterminalViewer"
+                    RelativePanel.AlignVerticalCenterWith="NonterminalViewer"
+                    Margin="10,0,10,0">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout>
+                        <TextBlock Foreground="DarkRed"
+                                   Text="左部或右部不能为空" />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+
+            <GridView Name="CandidateViewer"
+                      RelativePanel.AlignVerticalCenterWithPanel="True"
+                      RelativePanel.RightOf="Conduction"
+                      ItemsSource="{x:Bind Candidate}"
+                      Height="48"
+                      IsItemClickEnabled="True"
+                      ItemClick="DeleteViewer_Click">
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="data:TokenViewer">
+                        <RelativePanel>
+                            <TextBlock Tapped="Delete_Tapped"
+                                       Margin="5"
+                                       Text="{x:Bind Token}"
+                                       FontSize="24"
+                                       Width="50">
+                                <FlyoutBase.AttachedFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="删除" 
+                                                        Click="Delete_Click" />
+                                    </MenuFlyout>
+                                </FlyoutBase.AttachedFlyout>
+                            </TextBlock>
+                        </RelativePanel>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </RelativePanel>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <RelativePanel Grid.Column="0"
+                           Margin="5,0,0,5"
+                           BorderThickness="2"
+                           BorderBrush="AliceBlue">
+                <TextBlock Style="{ThemeResource TitleTextBlockStyle}" 
+                           Text="非终结符"
+                           Margin="10"
+                           Name="NonterminalInfo"/>
+                <GridView RelativePanel.Below="NonterminalInfo"
+                          ItemsSource="{x:Bind Nonterminals}"
+                          IsItemClickEnabled="True"
+                          ItemClick="NonterminalViewer_Click"
+                          Margin="10">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="data:TokenViewer">
+                            <TextBlock Text="{x:Bind Token}"
+                                       FontSize="24"
+                                       Width="50"
+                                       Margin="5"/>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+            </RelativePanel>
+
+            <RelativePanel Grid.Column="1"
+                           Margin="0,0,5,5"
+                           BorderThickness="2"
+                           BorderBrush="AliceBlue">
+                <TextBlock Style="{ThemeResource TitleTextBlockStyle}" 
+                           Text="记号" 
+                           Name="TokenInfo"
+                           Margin="10"/>
+                <GridView RelativePanel.Below="TokenInfo"
+                          ItemsSource="{x:Bind Tokens}"
+                          IsItemClickEnabled="True"
+                          ItemClick="TerminalViewer_Click"
+                          Margin="10">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="data:TokenViewer">
+                            <TextBlock Text="{x:Bind Token}" 
+                                       FontSize="24"
+                                       Width="50"
+                                       Margin="5"/>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+            </RelativePanel>
+        </Grid>
+    </Grid>
+</Page>

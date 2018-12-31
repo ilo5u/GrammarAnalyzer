@@ -1,0 +1,69 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrammarAnalyzer", "GrammarAnalyzer\GrammarAnalyzer.csproj", "{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kernel", "Kernel\Kernel.vcxproj", "{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|ARM.ActiveCfg = Debug|ARM
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|ARM.Build.0 = Debug|ARM
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|ARM.Deploy.0 = Debug|ARM
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|x64.ActiveCfg = Debug|x64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|x64.Build.0 = Debug|x64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|x64.Deploy.0 = Debug|x64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|x86.ActiveCfg = Debug|x86
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|x86.Build.0 = Debug|x86
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Debug|x86.Deploy.0 = Debug|x86
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|ARM.ActiveCfg = Release|ARM
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|ARM.Build.0 = Release|ARM
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|ARM.Deploy.0 = Release|ARM
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|ARM64.Build.0 = Release|ARM64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|ARM64.Deploy.0 = Release|ARM64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|x64.ActiveCfg = Release|x64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|x64.Build.0 = Release|x64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|x64.Deploy.0 = Release|x64
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|x86.ActiveCfg = Release|x86
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|x86.Build.0 = Release|x86
+		{E7A01F5B-267E-40B7-9DAC-D7282311A2F5}.Release|x86.Deploy.0 = Release|x86
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|ARM.ActiveCfg = Debug|ARM
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|ARM.Build.0 = Debug|ARM
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|x64.ActiveCfg = Debug|x64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|x64.Build.0 = Debug|x64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|x86.ActiveCfg = Debug|Win32
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Debug|x86.Build.0 = Debug|Win32
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|ARM.ActiveCfg = Release|ARM
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|ARM.Build.0 = Release|ARM
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|ARM64.Build.0 = Release|ARM64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|x64.ActiveCfg = Release|x64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|x64.Build.0 = Release|x64
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|x86.ActiveCfg = Release|Win32
+		{C827CE99-7A7A-472E-B6FB-80FABCD2EACA}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {732A2EAA-354C-4EF1-A0EE-7755490322F2}
+	EndGlobalSection
+EndGlobal
