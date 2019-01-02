@@ -355,7 +355,7 @@ LRGrammar::SLRDFA LRGrammar::BuildSLRDFA()
 				{
 					unhandledStates.push({ this->productions,(int)slrDfa.states.size(), newDeductions });
 
-					slrDfa.transfers[std::pair<int, Terminal>{currentState.id, token}] = slrDfa.states.size();
+					slrDfa.transfers[std::pair<int, Terminal>{currentState.id, token}] = (int)slrDfa.states.size();
 					slrDfa.states.push_back({ this->productions,(int)slrDfa.states.size(), newDeductions });
 				}
 				else
@@ -411,7 +411,7 @@ LRGrammar::LRDFA LRGrammar::BuildLRDFA()
 				{
 					unhandledStates.push({ (int)lrDfa.states.size(), newDeductions, this->productions, this->firstSet });
 
-					lrDfa.transfers[std::pair<int, Terminal>{currentState.id, token}] = lrDfa.states.size();
+					lrDfa.transfers[std::pair<int, Terminal>{currentState.id, token}] = (int)lrDfa.states.size();
 					lrDfa.states.push_back({ (int)lrDfa.states.size(), newDeductions, this->productions, this->firstSet });
 				}
 				else
@@ -435,7 +435,7 @@ std::string LRGrammar::GetSLRDeductions()
 	this->followSet = this->WorkOutFollows(this->firstSet);
 
 	SLRDFA slrDfa = this->BuildSLRDFA();
-	this->dfaStatesCnt = slrDfa.states.size();
+	this->dfaStatesCnt = (int)slrDfa.states.size();
 
 	std::string description = { };
 	for (const auto& elem : slrDfa.states)
@@ -484,7 +484,14 @@ std::string LRGrammar::GetSLRDeductions()
 				Terminals terminals = this->followSet[deduction.production.nonterminal];
 				for (const auto& terminal : terminals)
 				{
-					this->actions[std::pair<int, Terminal>{elem.id, terminal}] = deduction.production;
+					if (this->actions.find(std::pair<int, Terminal>{elem.id, terminal}) != this->actions.end())
+					{
+						this->dpactions[std::pair<int, Terminal>{elem.id, terminal}].push_back(deduction.production);
+					}
+					else
+					{
+						this->actions[std::pair<int, Terminal>{elem.id, terminal}] = deduction.production;
+					}
 				}
 			}
 			else if (deduction.production.candidate.front().type == TType::EPSILON)
@@ -492,7 +499,14 @@ std::string LRGrammar::GetSLRDeductions()
 				Terminals terminals = this->followSet[deduction.production.nonterminal];
 				for (const auto& terminal : terminals)
 				{
-					this->actions[std::pair<int, Terminal>{elem.id, terminal}] = deduction.production;
+					if (this->actions.find(std::pair<int, Terminal>{elem.id, terminal}) != this->actions.end())
+					{
+						this->dpactions[std::pair<int, Terminal>{elem.id, terminal}].push_back(deduction.production);
+					}
+					else
+					{
+						this->actions[std::pair<int, Terminal>{elem.id, terminal}] = deduction.production;
+					}
 				}
 			}
 		}
@@ -509,7 +523,7 @@ std::string LRGrammar::GetLRDeductions()
 	this->followSet = this->WorkOutFollows(this->firstSet);
 
 	LRDFA lrDfa = this->BuildLRDFA();
-	this->dfaStatesCnt = lrDfa.states.size();
+	this->dfaStatesCnt = (int)lrDfa.states.size();
 
 	std::string description = { };
 	for (const auto& elem : lrDfa.states)
@@ -574,11 +588,25 @@ std::string LRGrammar::GetLRDeductions()
 			}
 			else if (deduction.point == deduction.production.candidate.size())
 			{ /* 归约项目 */
-				this->actions[std::pair<int, Terminal>{elem.id, deduction.tail}] = deduction.production;
+				if (this->actions.find(std::pair<int, Terminal>{elem.id, deduction.tail}) != this->actions.end())
+				{
+					this->dpactions[std::pair<int, Terminal>{elem.id, deduction.tail}].push_back(deduction.production);
+				}
+				else
+				{
+					this->actions[std::pair<int, Terminal>{elem.id, deduction.tail}] = deduction.production;
+				}
 			}
 			else if (deduction.production.candidate.front().type == TType::EPSILON)
 			{ /* 规约项目 */
-				this->actions[std::pair<int, Terminal>{elem.id, deduction.tail}] = deduction.production;
+				if (this->actions.find(std::pair<int, Terminal>{elem.id, deduction.tail}) != this->actions.end())
+				{
+					this->dpactions[std::pair<int, Terminal>{elem.id, deduction.tail}].push_back(deduction.production);
+				}
+				else
+				{
+					this->actions[std::pair<int, Terminal>{elem.id, deduction.tail}] = deduction.production;
+				}
 			}
 		}
 	}
@@ -603,52 +631,15 @@ std::string LRGrammar::GetAnalysisSheet() const
 	nonterminals.erase(this->start);
 
 	std::string description = { };
-
-	String span{ " | " };
-	int maxSpanLength = span.size();
-	int maxStateLength = std::strlen("State");
-	int maxActionLength = 0;
-	for (const auto& elem : this->actions)
-	{
-		maxActionLength = std::max<int>(maxActionLength, (int)elem.first.second.attr.size());
-		if (elem.second.type == AType::SHIFT)
-		{
-			maxActionLength = std::max<int>(maxActionLength, (int)std::strlen("Shift   "));
-		}
-		else if (elem.second.type == AType::REDUC)
-		{
-			int lengthOfProduction = elem.second.production.nonterminal.attr.size() + std::strlen("->");
-			for (const auto& token : elem.second.production.candidate)
-			{
-				lengthOfProduction += token.attr.size();
-			}
-			maxActionLength = std::max<int>(maxActionLength, lengthOfProduction);
-		}
-		else
-		{
-			maxActionLength = std::max<int>(maxActionLength, (int)std::strlen("ACC"));
-		}
-	}
-	int maxGotoLength = 0;
-	for (const auto& elem : this->gotos)
-	{
-		maxGotoLength = std::max<int>(maxGotoLength, (int)std::strlen("   "));
-		maxGotoLength = std::max<int>(maxGotoLength, (int)elem.first.second.attr.size());
-	}
-
 	description += "     \t";
 	for (const auto& elem : terminals)
 	{
 		description += elem.attr;
-		for (int cnt = 0; cnt < maxActionLength - (int)elem.attr.size(); ++cnt)
-			description += " ";
 		description += '\t';
 	}
 	for (const auto& elem : nonterminals)
 	{
 		description += elem.attr;
-		for (int cnt = 0; cnt < maxGotoLength - (int)elem.attr.size(); ++cnt)
-			description += " ";
 		description += '\t';
 	}
 	description += '\n';
@@ -667,17 +658,11 @@ std::string LRGrammar::GetAnalysisSheet() const
 				{
 					char shift[BUFSIZ];
 					sprintf(shift, "Shift %d", act.nextState);
-					int length = std::strlen(shift);
-					for (int cnt = 0; cnt < maxActionLength - length; ++cnt)
-					{
-						sprintf(shift + std::strlen(shift), " ");
-					}
 					description += shift;
 				}
 				else if (act.type == AType::REDUC)
 				{
-					int length = act.production.nonterminal.attr.size() + std::strlen("->");
-					description += act.production.nonterminal.attr + "->";
+					description += act.production.nonterminal.attr + "→";
 					for (const auto& token : act.production.candidate)
 					{
 						if (token.type == TType::EPSILON
@@ -685,22 +670,47 @@ std::string LRGrammar::GetAnalysisSheet() const
 							description += "ε";
 						else
 							description += token.attr;
-						length += token.attr.size();
 					}
-					for (int cnt = 0; cnt < maxActionLength - length; ++cnt)
-						description += " ";
 				}
 				else
 				{
 					description += "ACC";
-					for (int cnt = 0; cnt < maxActionLength - (int)std::strlen("ACC"); ++cnt)
-						description += " ";
+				}
+
+				if (this->dpactions.find({ state, elem }) != this->dpactions.end())
+				{
+					const std::vector<Action>& dpacts = this->dpactions.at({ state, elem });
+					for (const auto& act : dpacts)
+					{
+						description += " · ";
+						if (act.type == AType::SHIFT)
+						{
+							char shift[BUFSIZ];
+							sprintf(shift, "Shift %d", act.nextState);
+							description += shift;
+						}
+						else if (act.type == AType::REDUC)
+						{
+							description += act.production.nonterminal.attr + "→";
+							for (const auto& token : act.production.candidate)
+							{
+								if (token.type == TType::EPSILON
+									|| token.attr.compare({ '@' }) == 0)
+									description += "ε";
+								else
+									description += token.attr;
+							}
+						}
+						else
+						{
+							description += "ACC";
+						}
+					}
 				}
 			}
 			else
 			{
-				for (int cnt = 0; cnt < maxActionLength; ++cnt)
-					description += " ";
+				description += " ";
 			}
 			description += '\t';
 		}
@@ -711,17 +721,11 @@ std::string LRGrammar::GetAnalysisSheet() const
 			{
 				char next[BUFSIZ];
 				sprintf(next, "%d", this->gotos.at({ state, elem }));
-				int length = std::strlen(next);
-				for (int cnt = 0; cnt < maxGotoLength - length; ++cnt)
-				{
-					sprintf(next + std::strlen(next), " ");
-				}
 				description += next;
 			}
 			else
 			{
-				for (int cnt = 0; cnt < maxGotoLength; ++cnt)
-					description += " ";
+				description += " ";
 			}
 			description += '\t';
 		}

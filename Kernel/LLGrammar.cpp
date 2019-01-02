@@ -343,52 +343,37 @@ std::string LLGrammar::GetAnalysisSheet()
 				{
 					if (sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].left.attribute.compare({ '@' }) != 0)
 					{
-						return { };
+						dpsheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].push_back(production);
 					}
-					sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}]
-						= production;
+					else
+					{
+						sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}]
+							= production;
+					}
 				}
 			}
 			else
 			{
 				if (sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].left.attribute.compare({ '@' }) != 0)
 				{
-					return { };
+					dpsheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].push_back(production);
 				}
-				sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}]
-					= production;
+				else
+				{
+					sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}]
+						= production;
+				}
 			}
 		}
 	}
 
 #ifdef DEBUG
 	/* 输出LL(1)分析表 */
-	int statMaxLength = 0; // 每列宽度（单位为一个字符）
-	int deliMaxLength = (int)std::strlen(" | "); // 分割符宽度
-	for (int i = 0; i < rowIndex; ++i)
-	{
-		for (int j = 0; j < columnIndex; ++j)
-		{
-			int length
-				= (int)sheet[std::pair<int, int>{i, j}].left.attribute.size();
-			length += (int)std::strlen("->");
-			for (const auto& token : sheet[std::pair<int, int>{i, j}].right)
-				length += (int)token.attribute.size();
-			statMaxLength = std::max<int>(statMaxLength, length);
-		}
-	}
-
 	std::string description = { };
-	for (int i = 0; i < statMaxLength; ++i)
-		description += ' ';
-	description += '\t';
+	description += " \t";
 	for (const auto& terminal : terminals)
 	{
 		description += terminal.attribute;
-		int length =
-			(int)terminal.attribute.size();
-		for (int i = 0; i < statMaxLength - length; ++i)
-			description += ' ';
 		description += '\t';
 	}
 	description += '\n';
@@ -396,10 +381,6 @@ std::string LLGrammar::GetAnalysisSheet()
 	for (const auto& nonterminal : nonterminals)
 	{
 		description += nonterminal.attribute;
-		int length =
-			(int)nonterminal.attribute.size(); // 有效字符数目
-		for (int i = 0; i < statMaxLength - length; ++i)
-			description += ' ';
 		description += '\t';
 
 		for (int column = 0; column < columnIndex; ++column)
@@ -407,18 +388,12 @@ std::string LLGrammar::GetAnalysisSheet()
 			if (sheet[std::pair<int, int>{this->rows[nonterminal], column}].left.attribute.compare({ '@' })
 				== 0)
 			{
-				for (int i = 0; i < statMaxLength; ++i)
-					description += ' ';
-				description += '\t';
+				description += " \t";
 			}
 			else
 			{
 				description += sheet[std::pair<int, int>{this->rows[nonterminal], column}].left.attribute;
-				int length
-					= (int)sheet[std::pair<int, int>{this->rows[nonterminal], column}].left.attribute.size(); // 有效字符数目
-
-				description += "->";
-				length += (int)std::strlen("->");
+				description += "→";
 
 				for (const auto& token : sheet[std::pair<int, int>{this->rows[nonterminal], column}].right)
 				{
@@ -426,10 +401,25 @@ std::string LLGrammar::GetAnalysisSheet()
 						description += "ε";
 					else
 						description += token.attribute;
-					length += (int)token.attribute.size();
 				}
-				for (int i = 0; i < statMaxLength - length; ++i)
-					description += ' ';
+
+				if (dpsheet[std::pair<int, int>{this->rows[nonterminal], column}].size() > 0)
+				{
+					for (const auto& elem : dpsheet[std::pair<int, int>{this->rows[nonterminal], column}])
+					{
+						description += " · ";
+						description += elem.left.attribute;
+						description += "→";
+
+						for (const auto& token : elem.right)
+						{
+							if (token.attribute.compare({ '@' }) == 0)
+								description += "ε";
+							else
+								description += token.attribute;
+						}
+					}
+				}
 				description += '\t';
 			}
 		}
@@ -477,12 +467,16 @@ std::string LLGrammar::Analyze(const char _Word[])
 		for (const auto& elem : analysisStack)
 		{
 			description += elem.attribute;
+			description += ' ';
 		}
 		description += '\t';
 
 		/* 输入 */
 		for (size_t i = pos; i < tokens.size(); ++i)
+		{
 			description += tokens[i].attribute;
+			description += ' ';
+		}
 		description += '\t';
 
 		Token top = analysisStack.back();
@@ -517,7 +511,7 @@ std::string LLGrammar::Analyze(const char _Word[])
 					!= 0)
 				{
 					/* 输出 */
-					description += sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].left.attribute + "->";
+					description += sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].left.attribute + "→";
 					for (const auto& elem : sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].right)
 					{
 						if (elem.attribute.compare({ '@' }) == 0)
@@ -541,9 +535,24 @@ std::string LLGrammar::Analyze(const char _Word[])
 				}
 				else
 				{
-					/* 输出 */
-					description += "动作不存在\n";
-					return description;
+					NoteSet::const_iterator it = std::find_if(this->notes.begin(), this->notes.end(),
+						[&tokens, &pos](const Token& elem) {
+						return elem == tokens[pos];
+					});
+					if (it != this->notes.end()
+						&& it->type == Token::Type::NONTERMINAL
+						&& top == *it)
+					{
+						analysisStack.pop_back();
+						++pos;
+						description += " \n";
+					}
+					else
+					{
+						/* 输出 */
+						description += "动作不存在\n";
+						return description;
+					}
 				}
 			}
 		}

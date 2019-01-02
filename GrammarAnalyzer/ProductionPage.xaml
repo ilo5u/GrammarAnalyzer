@@ -131,7 +131,8 @@
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="data:ProductionViewer">
                         <ScrollViewer HorizontalScrollBarVisibility="Visible"
-                                      HorizontalScrollMode="Auto">
+                                      HorizontalScrollMode="Auto"
+                                      Width="100">
                             <StackPanel Orientation="Horizontal"
                                         Margin="5"
                                         Tapped="DeleteProduction_Tapped">

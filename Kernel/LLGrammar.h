@@ -188,6 +188,8 @@ public:
 	typedef std::map<Nonterminal, int> RowsIndex; // 行向量索引
 	typedef std::map<std::pair<int, int>, Production> Sheet; // 分析表
 
+	typedef std::map<std::pair<int, int>, std::vector<Production>> DuplicateSheet; // 多重项
+
 public:
 	LLGrammar()
 	{
@@ -222,6 +224,7 @@ private:
 	RowsIndex rows;
 	ColumnsIndex columns;
 	Sheet sheet;
+	DuplicateSheet dpsheet;
 
 private:
 	void EliminateLeftRecursion();

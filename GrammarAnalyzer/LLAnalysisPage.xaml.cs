@@ -28,6 +28,7 @@ namespace GrammarAnalyzer
     public sealed partial class LLAnalysisPage : Page
     {
         public List<List<string>> Rows = new List<List<string>>();
+        private bool Collision = false;
 
         public LLAnalysisPage()
         {
@@ -40,6 +41,9 @@ namespace GrammarAnalyzer
         private Kernel.Analyzer LLAnalyzer = new Kernel.Analyzer();
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            Collision = false;
+            CollisionInfo.Visibility = Visibility.Collapsed;
+
             IEnumerable<TokenViewer> tokens = (IEnumerable<TokenViewer>)e.Parameter;
             foreach (var item in tokens)
             {
@@ -111,6 +115,10 @@ namespace GrammarAnalyzer
                     {
                         if (!string.IsNullOrEmpty(elem))
                         {
+                            if (elem.Contains('·'))
+                            {
+                                Collision = true;
+                            }
                             vs.Add(elem);
                         }
                     }
@@ -138,6 +146,11 @@ namespace GrammarAnalyzer
                 AnalysisSheet.ItemsSource = Rows;
                 AnalysisSheet.Visibility = Visibility.Visible;
                 WaitForSheet.Visibility = Visibility.Collapsed;
+
+                if (Collision == true)
+                {
+                    CollisionInfo.Visibility = Visibility.Visible;
+                }
             });
         }
 
@@ -152,6 +165,14 @@ namespace GrammarAnalyzer
             new Task(() => StartAnalysis(word)).Start();
             AnalysisProcedure.Visibility = Visibility.Collapsed;
             WaitForProcedure.Visibility = Visibility.Visible;
+
+            if (Collision == true
+                && sender is FrameworkElement collision)
+            {
+                FlyoutBase.ShowAttachedFlyout(collision);
+            }
+
+            Statement.Clear();
         }
 
         async private void StartAnalysis(string word)

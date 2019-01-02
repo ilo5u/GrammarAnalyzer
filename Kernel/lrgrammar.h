@@ -182,6 +182,7 @@ public:
 		}
 	};
 	typedef std::map<std::pair<int, Terminal>, Action> ActionSheet;
+	typedef std::map<std::pair<int, Terminal>, std::vector<Action>> DuplicateActionSheet;
 	typedef std::map<std::pair<int, Nonterminal>, int> GotoSheet;
 
 private:
@@ -488,6 +489,7 @@ private:
 
 	int dfaStatesCnt;
 	ActionSheet actions;
+	DuplicateActionSheet dpactions;
 	GotoSheet gotos;
 	bool isExtend;
 

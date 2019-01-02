@@ -21,11 +21,20 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock Text="分析表"
-                       Style="{ThemeResource TitleTextBlockStyle}"
-                       Name="SheetInfo"
-                       Margin="10"
-                       Grid.Row="0"/>
+            <RelativePanel Grid.Row="0">
+                <TextBlock Text="分析表"
+                           Style="{ThemeResource TitleTextBlockStyle}"
+                           Name="SheetInfo"
+                           Margin="10"/>
+
+                <TextBlock Name="CollisionInfo"
+                           Style="{ThemeResource SubtitleTextBlockStyle}"
+                           Text="存在冲突表项"
+                           Foreground="DarkRed"
+                           Margin="10,10,10,10"
+                           RelativePanel.AlignBottomWith="SheetInfo"
+                           RelativePanel.RightOf="SheetInfo"/>
+            </RelativePanel>
 
             <RelativePanel Grid.Row="1">
                 <ProgressRing Name="WaitForSheet"
@@ -54,7 +63,15 @@
                         Background="White"
                         BorderThickness="0"
                         Margin="10,0,20,0"
-                        Click="ToAnalysis_Click"/>
+                        Click="ToAnalysis_Click">
+                    <FlyoutBase.AttachedFlyout>
+                        <Flyout>
+                            <TextBlock Foreground="DarkRed"
+                                       Text="分析表存在冲突"/>
+
+                        </Flyout>
+                    </FlyoutBase.AttachedFlyout>
+                </Button>
 
                 <GridView Name="StatementViewer"
                           RelativePanel.AlignVerticalCenterWithPanel="True"

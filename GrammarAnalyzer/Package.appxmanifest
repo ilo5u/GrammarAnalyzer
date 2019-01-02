@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="41278ilo5u.59736FCA511EA" Publisher="CN=A2A596E7-E986-4A63-842C-AA7A0746FE4D" Version="1.0.8.0" />
+  <Identity Name="41278ilo5u.59736FCA511EA" Publisher="CN=A2A596E7-E986-4A63-842C-AA7A0746FE4D" Version="1.0.11.0" />
   <mp:PhoneIdentity PhoneProductId="9e9c6ca1-0be1-4352-82f2-eb6c1ec9e7c8" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>语法分析器</DisplayName>
@@ -17,8 +17,13 @@
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="GrammarAnalyzer.App">
       <uap:VisualElements DisplayName="语法分析器" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="用户给定文法，该应用能给出该文法对应的LL(1)分析表、SLR(1)分析表、LR(1)分析表以及LR(0)项目集规范族和LR(1)项目集规范族，并可对给定的句子进行对应的语法分析过程。" BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\LargeTile.png" Square71x71Logo="Assets\SmallTile.png" ShortName="语法分析器">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+            <uap:ShowOn Tile="square310x310Logo" />
+          </uap:ShowNameOnTiles>
         </uap:DefaultTile>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="blue" />
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="landscape" />
         </uap:InitialRotationPreference>
