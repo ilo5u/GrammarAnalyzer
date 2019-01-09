@@ -330,6 +330,8 @@ std::string LLGrammar::GetAnalysisSheet()
 	int columnIndex = 0;
 	for (const auto& token : terminals)
 		columns[token] = columnIndex++;
+	for (const auto& token : nonterminals)
+		columns[token] = columnIndex;
 
 	/* 构造LL(1)分析表 */
 	for (const auto& production : this->productions)
@@ -507,8 +509,7 @@ std::string LLGrammar::Analyze(const char _Word[])
 			}
 			else
 			{
-				if (sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].left.attribute.compare({ '@' })
-					!= 0)
+				if (sheet.find(std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}) != sheet.end())
 				{
 					/* 输出 */
 					description += sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].left.attribute + "→";
@@ -541,7 +542,7 @@ std::string LLGrammar::Analyze(const char _Word[])
 					});
 					if (it != this->notes.end()
 						&& it->type == Token::Type::NONTERMINAL
-						&& top == *it)
+						&& top.attribute == it->attribute)
 					{
 						analysisStack.pop_back();
 						++pos;

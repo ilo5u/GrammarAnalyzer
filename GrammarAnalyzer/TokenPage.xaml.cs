@@ -59,7 +59,8 @@ namespace GrammarAnalyzer
                 && !string.IsNullOrEmpty(nonterminal.Text))
             {
                 if (nonterminal.Text.Contains("@")
-                    || nonterminal.Text.Contains("#"))
+                    || nonterminal.Text.Contains("#")
+                    || nonterminal.Text.Contains("."))
                 {
                     nonterminal.Text = "";
                     if (sender is FrameworkElement illegalInput)
@@ -120,7 +121,8 @@ namespace GrammarAnalyzer
                 && !string.IsNullOrEmpty(terminal.Text))
             {
                 if (terminal.Text.Contains("@")
-                    || terminal.Text.Contains("#"))
+                    || terminal.Text.Contains("#")
+                    || terminal.Text.Contains("."))
                 {
                     terminal.Text = "";
                     if (sender is FrameworkElement illegalInput)

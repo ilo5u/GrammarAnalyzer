@@ -132,7 +132,7 @@
                     <DataTemplate x:DataType="data:ProductionViewer">
                         <ScrollViewer HorizontalScrollBarVisibility="Visible"
                                       HorizontalScrollMode="Auto"
-                                      Width="100">
+                                      Width="120">
                             <StackPanel Orientation="Horizontal"
                                         Margin="5"
                                         Tapped="DeleteProduction_Tapped">

@@ -442,16 +442,16 @@ std::string LRGrammar::GetSLRDeductions()
 	{
 		for (const auto& deduction : elem.deductions)
 		{
-			description += deduction.production.nonterminal.attr + "->";
+			description += deduction.production.nonterminal.attr + "¡ú";
 			for (int pos = 0; pos < (int)deduction.production.candidate.size(); ++pos)
 			{
 				if (pos == deduction.point)
-					description += '.';
+					description += '¡¤';
 				if (deduction.production.candidate[pos].type != TType::EPSILON)
 					description += deduction.production.candidate[pos].attr;
 			}
 			if (deduction.point == (int)deduction.production.candidate.size())
-				description += '.';
+				description += '¡¤';
 			description += '\n';
 		}
 		description += '\t';
@@ -537,16 +537,16 @@ std::string LRGrammar::GetLRDeductions()
 			{
 				isPrint.push_back({ any->production, any->point });
 
-				description += any->production.nonterminal.attr + "->";
+				description += any->production.nonterminal.attr + "¡ú";
 				for (int pos = 0; pos < (int)any->production.candidate.size(); ++pos)
 				{
 					if (pos == any->point)
-						description += '.';
+						description += '¡¤';
 					if (any->production.candidate[pos].type != TType::EPSILON)
 						description += any->production.candidate[pos].attr;
 				}
 				if (any->point == any->production.candidate.size())
-					description += '.';
+					description += '¡¤';
 				description += " [";
 				description += any->tail.attr;
 				LRDeductions::const_iterator more = any;
@@ -830,7 +830,7 @@ std::string LRGrammar::Analyze(const char _Word[]) const
 						tokenStack.push_back(action.production.nonterminal);
 
 						/* Êä³ö */
-						description += action.production.nonterminal.attr + "->";
+						description += action.production.nonterminal.attr + "¡ú";
 
 						for (const auto& elem : action.production.candidate)
 						{
