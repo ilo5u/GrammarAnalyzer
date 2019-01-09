@@ -133,6 +133,11 @@ namespace GrammarAnalyzer
                  if (Collision == true)
                  {
                      CollisionInfo.Visibility = Visibility.Visible;
+                     ToAnalysis.IsEnabled = false;
+                 }
+                 else
+                 {
+                     ToAnalysis.IsEnabled = true;
                  }
              });
         }
