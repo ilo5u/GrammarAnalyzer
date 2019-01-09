@@ -166,74 +166,68 @@ LRGrammar::Terminals LRGrammar::GetFollow(
 		LRGrammar::Terminals more;
 		LRGrammar::Candidate::const_iterator next = production.candidate.begin();
 		while ((next = std::find(next, production.candidate.end(), _Dest)) != production.candidate.end())
-		{
+		{ // 待求非终结符出现在该产生式中
+			++next;
+			bool epsilon = false;
 			if (next != production.candidate.end())
-			{ // 待求非终结符出现在该产生式中
-				++next;
-				bool epsilon = false;
-				if (next != production.candidate.end())
+			{
+				LRGrammar::Candidate candidate{ next, production.candidate.end() };
+				more = GetFirst(candidate, _Firsts);
+				for (const auto& elem : more)
 				{
-					LRGrammar::Candidate candidate{ next, production.candidate.end() };
-					more = GetFirst(candidate, _Firsts);
-					for (const auto& elem : more)
+					if (elem.type == TType::EPSILON)
+						epsilon = true;
+					else
+						follow.insert(elem);
+				}
+			}
+			if (epsilon
+				|| next == production.candidate.end())
+			{
+				/* 合并产生式左部的FOLLOW集 */
+				if (_DoneList[production.nonterminal])
+				{ // 左部的FOLLOW集已知
+					for (const auto& elem : _Follows[production.nonterminal])
 					{
-						if (elem.type == TType::EPSILON)
-							epsilon = true;
-						else
-							follow.insert(elem);
+						follow.insert(elem);
 					}
 				}
-				if (epsilon
-					|| next == production.candidate.end())
-				{
-					/* 合并产生式左部的FOLLOW集 */
-					if (_DoneList[production.nonterminal])
-					{ // 左部的FOLLOW集已知
-						for (const auto& elem : _Follows[production.nonterminal])
+				else if (production.nonterminal != _Sours[0]
+					&& production.nonterminal != _Dest)
+				{   // 未知则仅当左部非终结符不是第一个待求非终结符或与当前待求非终结符不同时才进行递归
+					// 以避免无限递归
+					if (std::find(_Sours.begin() + 1, _Sours.end(), production.nonterminal)
+						== _Sours.end())
+					{ // 若该非终符未被递归访问 则插入已访问集中
+						_Sours.push_back(production.nonterminal);
+						more = GetFollow(
+							production.nonterminal,
+							_Productions,
+							_Firsts, _Follows,
+							_Sours, _DoneList,
+							_Start
+						);
+						if (_Sours.size() == 0)
+							return { }; // 求解过程失败
+						else
 						{
-							follow.insert(elem);
+							_Sours.pop_back();
+							if (production.nonterminal == _Start)
+								follow.insert(
+									LRGrammar::Token{ LRGrammar::TType::TERMINAL, {TERMINATE} }
+							);
+							for (const auto& elem : more)
+								follow.insert(elem);
 						}
 					}
-					else if (production.nonterminal != _Sours[0]
-						&& production.nonterminal != _Dest)
-					{   // 未知则仅当左部非终结符不是第一个待求非终结符或与当前待求非终结符不同时才进行递归
-						// 以避免无限递归
-						if (std::find(_Sours.begin() + 1, _Sours.end(), production.nonterminal)
-							== _Sours.end())
-						{ // 若该非终符未被递归访问 则插入已访问集中
-							_Sours.push_back(production.nonterminal);
-							more = GetFollow(
-								production.nonterminal,
-								_Productions,
-								_Firsts, _Follows,
-								_Sours, _DoneList,
-								_Start
-							);
-							if (_Sours.size() == 0)
-								return { }; // 求解过程失败
-							else
-							{
-								_Sours.pop_back();
-								if (production.nonterminal == _Start)
-									follow.insert(
-										LRGrammar::Token{ LRGrammar::TType::TERMINAL, {TERMINATE} }
-								);
-								for (const auto& elem : more)
-									follow.insert(elem);
-							}
-						}
-						else
-						{   // 出现无限递归
-							// 将已访问集合置为空以标志当前求解过程失败
-							_Sours.clear();
-							return { };
-						}
+					else
+					{   // 出现无限递归
+						// 将已访问集合置为空以标志当前求解过程失败
+						_Sours.clear();
+						return { };
 					}
 				}
 			}
-
-			if (next != production.candidate.end())
-				++next;
 		}
 	}
 	return follow;
@@ -446,12 +440,12 @@ std::string LRGrammar::GetSLRDeductions()
 			for (int pos = 0; pos < (int)deduction.production.candidate.size(); ++pos)
 			{
 				if (pos == deduction.point)
-					description += '·';
+					description += "·";
 				if (deduction.production.candidate[pos].type != TType::EPSILON)
 					description += deduction.production.candidate[pos].attr;
 			}
 			if (deduction.point == (int)deduction.production.candidate.size())
-				description += '·';
+				description += "·";
 			description += '\n';
 		}
 		description += '\t';
@@ -541,12 +535,12 @@ std::string LRGrammar::GetLRDeductions()
 				for (int pos = 0; pos < (int)any->production.candidate.size(); ++pos)
 				{
 					if (pos == any->point)
-						description += '·';
+						description += "·";
 					if (any->production.candidate[pos].type != TType::EPSILON)
 						description += any->production.candidate[pos].attr;
 				}
 				if (any->point == any->production.candidate.size())
-					description += '·';
+					description += "·";
 				description += " [";
 				description += any->tail.attr;
 				LRDeductions::const_iterator more = any;
@@ -796,9 +790,10 @@ std::string LRGrammar::Analyze(const char _Word[]) const
 			Action action = this->actions.at(std::pair<int, Terminal>{ stateStack.back(), *input });
 			if (action.type == AType::SHIFT)
 			{
-				++input;
 				stateStack.push_back(action.nextState);
 				tokenStack.push_back(*input);
+
+				++input;
 
 				sprintf(buf, "Shift %d", action.nextState);
 				description += buf;

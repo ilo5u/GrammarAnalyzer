@@ -137,26 +137,31 @@ namespace GrammarAnalyzer
              });
         }
 
+        bool IsOnAnalysis = false;
         private void ToAnalysis_Click(object sender, RoutedEventArgs e)
         {
-            string word = " ";
-            foreach (var item in Statement)
+            if (!IsOnAnalysis)
             {
-                word += item.Token + " ";
+                IsOnAnalysis = true;
+                string word = " ";
+                foreach (var item in Statement)
+                {
+                    word += item.Token + " ";
+                }
+                Debug.WriteLine("Analyze: " + word);
+
+                new Task(() => StartAnalysis(word)).Start();
+                AnalysisProcedure.Visibility = Visibility.Collapsed;
+                WaitForProcedure.Visibility = Visibility.Visible;
+
+                if (Collision == true
+                    && sender is FrameworkElement collision)
+                {
+                    FlyoutBase.ShowAttachedFlyout(collision);
+                }
+
+                Statement.Clear();
             }
-            Debug.WriteLine("Analyze: " + word);
-
-            new Task(() => StartAnalysis(word)).Start();
-            AnalysisProcedure.Visibility = Visibility.Collapsed;
-            WaitForProcedure.Visibility = Visibility.Visible;
-
-            if (Collision == true
-                && sender is FrameworkElement collision)
-            {
-                FlyoutBase.ShowAttachedFlyout(collision);
-            }
-
-            Statement.Clear();
         }
 
         async private void StartAnalysis(string word)
@@ -243,6 +248,7 @@ namespace GrammarAnalyzer
                 AnalysisProcedure.Visibility = Visibility.Visible;
                 WaitForProcedure.Visibility = Visibility.Collapsed;
             });
+            IsOnAnalysis = false;
         }
 
         private void Delete_Tapped(object sender, TappedRoutedEventArgs e)

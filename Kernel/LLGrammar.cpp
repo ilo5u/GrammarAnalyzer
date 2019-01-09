@@ -343,7 +343,7 @@ std::string LLGrammar::GetAnalysisSheet()
 			{
 				for (const auto& elem : followSet[production.left])
 				{
-					if (sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].left.attribute.compare({ '@' }) != 0)
+					if (sheet.find({ this->rows[production.left], this->columns[elem] }) != sheet.end())
 					{
 						dpsheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].push_back(production);
 					}
@@ -356,7 +356,7 @@ std::string LLGrammar::GetAnalysisSheet()
 			}
 			else
 			{
-				if (sheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].left.attribute.compare({ '@' }) != 0)
+				if (sheet.find({ this->rows[production.left], this->columns[elem] }) != sheet.end())
 				{
 					dpsheet[std::pair<int, int>{this->rows[production.left], this->columns[elem]}].push_back(production);
 				}
@@ -387,8 +387,7 @@ std::string LLGrammar::GetAnalysisSheet()
 
 		for (int column = 0; column < columnIndex; ++column)
 		{
-			if (sheet[std::pair<int, int>{this->rows[nonterminal], column}].left.attribute.compare({ '@' })
-				== 0)
+			if (sheet.find({ this->rows[nonterminal], column }) == sheet.end())
 			{
 				description += " \t";
 			}
@@ -405,7 +404,7 @@ std::string LLGrammar::GetAnalysisSheet()
 						description += token.attribute;
 				}
 
-				if (dpsheet[std::pair<int, int>{this->rows[nonterminal], column}].size() > 0)
+				if (dpsheet.find({ this->rows[nonterminal], column }) != dpsheet.end())
 				{
 					for (const auto& elem : dpsheet[std::pair<int, int>{this->rows[nonterminal], column}])
 					{
@@ -451,12 +450,10 @@ std::string LLGrammar::Analyze(const char _Word[])
 	std::string description = { };
 	description += "Step\tStack\tInput\tOutput\n";
 
-	Tokens analysisStack;
-	analysisStack.push_back(Token{ Token::Type::TERMINAL, '$' });
-	analysisStack.push_back(this->start);
+	Tokens analysisStack{ {Token{ Token::Type::TERMINAL, '$' }, this->start} };
+	Tokens::const_iterator input = tokens.begin();
 	int step = 1;
 	char buf[BUFSIZ] = { 0 };
-	int pos = 0;
 	do
 	{
 		/* 步骤 */
@@ -474,9 +471,9 @@ std::string LLGrammar::Analyze(const char _Word[])
 		description += '\t';
 
 		/* 输入 */
-		for (size_t i = pos; i < tokens.size(); ++i)
+		for (Tokens::const_iterator it = input; it != tokens.end(); ++it)
 		{
-			description += tokens[i].attribute;
+			description += it->attribute;
 			description += ' ';
 		}
 		description += '\t';
@@ -484,11 +481,11 @@ std::string LLGrammar::Analyze(const char _Word[])
 		Token top = analysisStack.back();
 		if (top.type == Token::Type::TERMINAL)
 		{
-			if (top.attribute.compare(tokens[pos].attribute) == 0)
+			if (top.attribute.compare(input->attribute) == 0)
 			{
 				analysisStack.pop_back();
-				++pos;
 				description += " \n";
+				++input;
 			}
 			else
 			{
@@ -499,8 +496,8 @@ std::string LLGrammar::Analyze(const char _Word[])
 		}
 		else
 		{
-			if (tokens[pos].attribute.compare("$") != 0
-				&& std::find(this->notes.begin(), this->notes.end(), tokens[pos])
+			if (input->attribute.compare("$") != 0
+				&& std::find(this->notes.begin(), this->notes.end(), *input)
 				== this->notes.end())
 			{
 				/* 输出 */
@@ -509,11 +506,11 @@ std::string LLGrammar::Analyze(const char _Word[])
 			}
 			else
 			{
-				if (sheet.find(std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}) != sheet.end())
+				if (sheet.find({this->rows[top], this->columns[*input]}) != sheet.end())
 				{
 					/* 输出 */
-					description += sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].left.attribute + "→";
-					for (const auto& elem : sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].right)
+					description += sheet[std::pair<int, int>{this->rows[top], this->columns[*input]}].left.attribute + "→";
+					for (const auto& elem : sheet[std::pair<int, int>{this->rows[top], this->columns[*input]}].right)
 					{
 						if (elem.attribute.compare({ '@' }) == 0)
 							description += "ε";
@@ -525,8 +522,8 @@ std::string LLGrammar::Analyze(const char _Word[])
 					/* 动作 */
 					analysisStack.pop_back();
 					for (Candidate::const_reverse_iterator it
-						= sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].right.rbegin();
-						it != sheet[std::pair<int, int>{this->rows[top], this->columns[tokens[pos]]}].right.rend(); ++it)
+						= sheet[std::pair<int, int>{this->rows[top], this->columns[*input]}].right.rbegin();
+						it != sheet[std::pair<int, int>{this->rows[top], this->columns[*input]}].right.rend(); ++it)
 					{
 						if (it->attribute.compare({ '@' }) != 0)
 						{
@@ -537,15 +534,15 @@ std::string LLGrammar::Analyze(const char _Word[])
 				else
 				{
 					NoteSet::const_iterator it = std::find_if(this->notes.begin(), this->notes.end(),
-						[&tokens, &pos](const Token& elem) {
-						return elem == tokens[pos];
+						[&tokens, &input](const Token& elem) {
+						return elem == *input;
 					});
 					if (it != this->notes.end()
 						&& it->type == Token::Type::NONTERMINAL
 						&& top.attribute == it->attribute)
 					{
 						analysisStack.pop_back();
-						++pos;
+						++input;
 						description += " \n";
 					}
 					else
@@ -557,7 +554,7 @@ std::string LLGrammar::Analyze(const char _Word[])
 				}
 			}
 		}
-	} while (analysisStack.back().attribute.compare("$") != 0 && pos < (int)tokens.size());
+	} while (analysisStack.back().attribute.compare("$") != 0 && input != tokens.end());
 	/* 步骤 */
 	sprintf(buf, "%d", step + 1);
 	description += buf;
@@ -572,9 +569,9 @@ std::string LLGrammar::Analyze(const char _Word[])
 	description += '\t';
 
 	/* 输入 */
-	for (size_t i = pos; i < tokens.size(); ++i)
-		description += tokens[i].attribute;
-	if (pos == tokens.size())
+	for (Tokens::const_iterator it = input; it != tokens.end(); ++it)
+		description += it->attribute + " ";
+	if (input == tokens.end())
 		description += ' ';
 	description += '\t';
 
@@ -857,74 +854,68 @@ static LLGrammar::Follow GetFollow(
 		LLGrammar::Follow more;
 		LLGrammar::Candidate::const_iterator next = production.right.begin();
 		while ((next = std::find(next, production.right.end(), _Dest)) != production.right.end())
-		{
+		{ // 待求非终结符出现在该产生式中
+			++next;
+			bool epsilon = false;
 			if (next != production.right.end())
-			{ // 待求非终结符出现在该产生式中
-				++next;
-				bool epsilon = false;
-				if (next != production.right.end())
+			{
+				LLGrammar::Candidate candidate{ next, production.right.end() };
+				more = GetFirst(candidate, _Firsts);
+				for (const auto& elem : more)
 				{
-					LLGrammar::Candidate candidate{ next, production.right.end() };
-					more = GetFirst(candidate, _Firsts);
-					for (const auto& elem : more)
+					if (elem.attribute.compare({ '@' }) == 0)
+						epsilon = true;
+					else
+						follow.insert(elem);
+				}
+			}
+			if (epsilon
+				|| next == production.right.end())
+			{
+				/* 合并产生式左部的FOLLOW集 */
+				if (_DoneList[production.left])
+				{ // 左部的FOLLOW集已知
+					for (const auto& elem : _Follows[production.left])
 					{
-						if (elem.attribute.compare({'@'}) == 0)
-							epsilon = true;
-						else
-							follow.insert(elem);
+						follow.insert(elem);
 					}
 				}
-				if (epsilon
-					|| next == production.right.end())
-				{
-					/* 合并产生式左部的FOLLOW集 */
-					if (_DoneList[production.left])
-					{ // 左部的FOLLOW集已知
-						for (const auto& elem : _Follows[production.left])
+				else if (production.left != _Sours[0]
+					&& production.left != _Dest)
+				{   // 未知则仅当左部非终结符不是第一个待求非终结符或与当前待求非终结符不同时才进行递归
+					// 以避免无限递归
+					if (std::find(_Sours.begin() + 1, _Sours.end(), production.left)
+						== _Sours.end())
+					{ // 若该非终符未被递归访问 则插入已访问集中
+						_Sours.push_back(production.left);
+						more = GetFollow(
+							production.left,
+							_Productions,
+							_Firsts, _Follows,
+							_Sours, _DoneList,
+							_Start
+						);
+						if (_Sours.size() == 0)
+							return { }; // 求解过程失败
+						else
 						{
-							follow.insert(elem);
+							_Sours.pop_back();
+							if (production.left == _Start)
+								follow.insert(
+									LLGrammar::Token{ LLGrammar::Token::Type::TERMINAL, {'$'} }
+							);
+							for (const auto& elem : more)
+								follow.insert(elem);
 						}
 					}
-					else if (production.left != _Sours[0]
-						&& production.left != _Dest)
-					{   // 未知则仅当左部非终结符不是第一个待求非终结符或与当前待求非终结符不同时才进行递归
-						// 以避免无限递归
-						if (std::find(_Sours.begin() + 1, _Sours.end(), production.left)
-							== _Sours.end())
-						{ // 若该非终符未被递归访问 则插入已访问集中
-							_Sours.push_back(production.left);
-							more = GetFollow(
-								production.left,
-								_Productions,
-								_Firsts, _Follows,
-								_Sours, _DoneList,
-								_Start
-							);
-							if (_Sours.size() == 0)
-								return { }; // 求解过程失败
-							else
-							{
-								_Sours.pop_back();
-								if (production.left == _Start)
-									follow.insert(
-										LLGrammar::Token{ LLGrammar::Token::Type::TERMINAL, {'$'} }
-								);
-								for (const auto& elem : more)
-									follow.insert(elem);
-							}
-						}
-						else
-						{   // 出现无限递归
-							// 将已访问集合置为空以标志当前求解过程失败
-							_Sours.clear();
-							return { };
-						}
+					else
+					{   // 出现无限递归
+						// 将已访问集合置为空以标志当前求解过程失败
+						_Sours.clear();
+						return { };
 					}
 				}
 			}
-
-			if (next != production.right.end())
-				++next;
 		}
 	}
 	return follow;
