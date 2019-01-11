@@ -541,17 +541,18 @@ std::string LRGrammar::GetLRDeductions()
 				}
 				if (any->point == any->production.candidate.size())
 					description += "¡¤";
-				description += " [";
+				description += "£¬";
 				description += any->tail.attr;
 				LRDeductions::const_iterator more = any;
 				while (++more != elem.deductions.end())
 				{
 					if (SLRDeduction{ any->production, any->point } == SLRDeduction{ more->production, more->point })
 					{
+						description += " ";
 						description += more->tail.attr;
 					}
 				}
-				description += "]\n";
+				description += "\n";
 			}
 		}
 		description += '\t';
@@ -641,7 +642,7 @@ std::string LRGrammar::GetAnalysisSheet() const
 	for (int state = 0; state < this->dfaStatesCnt; ++state)
 	{
 		char number[BUFSIZ];
-		sprintf(number, "%5d\t", state);
+		sprintf(number, "%d\t", state);
 		description += number;
 		for (const auto& elem : terminals)
 		{
@@ -656,6 +657,7 @@ std::string LRGrammar::GetAnalysisSheet() const
 				}
 				else if (act.type == AType::REDUC)
 				{
+					description += "Reduce by ";
 					description += act.production.nonterminal.attr + "¡ú";
 					for (const auto& token : act.production.candidate)
 					{
@@ -685,6 +687,7 @@ std::string LRGrammar::GetAnalysisSheet() const
 						}
 						else if (act.type == AType::REDUC)
 						{
+							description += "Reduce by ";
 							description += act.production.nonterminal.attr + "¡ú";
 							for (const auto& token : act.production.candidate)
 							{
@@ -825,6 +828,7 @@ std::string LRGrammar::Analyze(const char _Word[]) const
 						tokenStack.push_back(action.production.nonterminal);
 
 						/* Êä³ö */
+						description += "Reduce by ";
 						description += action.production.nonterminal.attr + "¡ú";
 
 						for (const auto& elem : action.production.candidate)
