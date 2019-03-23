@@ -1,0 +1,93 @@
+﻿<Page
+    x:Class="Board.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Board"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="7*"/>
+        </Grid.ColumnDefinitions>
+        <Grid x:Name="GlassHost"/>
+
+        <Grid Background="#AF2F4F4F">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock x:Name="TitleBlock"
+                           Style="{ThemeResource SubtitleTextBlockStyle}"
+                           Margin="20,10,0,5"
+                           Foreground="White"
+                           FontWeight="Bold"
+                           FontFamily="Consolas"
+                           Grid.Row="0">
+                        Analyzer
+                </TextBlock>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                 
+                    <RelativePanel Margin="0,20,10,0">
+                        <RelativePanel x:Name="EditButton"
+                                       Tapped="EditButton_Tapped">
+                            <Rectangle Name="EditRect" 
+                                       Height="24" Width="3" 
+                                       Fill="LightBlue" 
+                                       Margin="0,0,10,0"/>
+                            <TextBlock Name="EditIcon"
+                                       Text="&#xE104;" FontFamily="Segoe MDL2 Assets"
+                                       Foreground="White"
+                                       FontSize="20"
+                                       RelativePanel.RightOf="EditRect"
+                                       RelativePanel.AlignVerticalCenterWith="EditRect"/>
+                        </RelativePanel>
+
+                        <RelativePanel x:Name="HelpButton"
+                                       Tapped="HelpButton_Tapped"
+                                       RelativePanel.Below="EditButton"
+                                       Margin="0,20,0,0">
+                            <Rectangle Name="HelpRect" 
+                                       Height="24" Width="3" 
+                                       Fill="Transparent" 
+                                       Margin="0,0,10,0"/>
+                            <TextBlock Name="HelpIcon"
+                                       Text="&#xEBDB;" FontFamily="Segoe MDL2 Assets"
+                                       FontSize="20"
+                                       Foreground="White"
+                                       RelativePanel.RightOf="HelpRect"
+                                       RelativePanel.AlignVerticalCenterWith="HelpRect"/>
+                        </RelativePanel>
+                    </RelativePanel>
+
+                    <Frame x:Name="MainNavigationFrame"
+                           Padding="5"
+                           Grid.Column="1"/>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <Grid Background="#BF2F4F4F" Grid.Column="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Frame x:Name="SubNavigationFrame"
+                       Padding="5" 
+                       Grid.Row="1"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>
