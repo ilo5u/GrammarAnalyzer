@@ -91,8 +91,20 @@
                     Click="ToProduction_Click">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
-                        <TextBlock Text="未设置起始非终结符"
-                                   Foreground="DarkRed"/>
+                        <RelativePanel>
+                            <TextBlock Name="NoStartNonterminal"
+                                   Text="未设置起始非终结符"
+                                   Foreground="DarkRed"
+                                   Visibility="Collapsed"/>
+                            <TextBlock Name="NoNonterminal"
+                                   Text="没有非终结符"
+                                   Foreground="DarkRed"
+                                   Visibility="Collapsed"/>
+                            <TextBlock Name="NoTerminal"
+                                   Text="没有终结符"
+                                   Foreground="DarkRed"
+                                   Visibility="Collapsed"/>
+                        </RelativePanel>
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </Button>

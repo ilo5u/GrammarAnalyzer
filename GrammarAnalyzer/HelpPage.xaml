@@ -9,6 +9,10 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-
+        <RelativePanel Margin="20">
+            <HyperlinkButton NavigateUri="https://github.com/ilo5u/GrammarAnalyzer">
+                <TextBlock Text="https://github.com/ilo5u/GrammarAnalyzer" FontSize="24"></TextBlock>
+            </HyperlinkButton>
+        </RelativePanel>
     </Grid>
 </Page>

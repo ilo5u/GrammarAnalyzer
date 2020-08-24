@@ -73,6 +73,7 @@ namespace GrammarAnalyzer
                     try
                     {
                         Terminals.First(elem => elem.Token == nonterminal.Text);
+                        // typed nonterminal is same as one existed terminal
                         if (sender is FrameworkElement illegalInput)
                         {
                             FlyoutBase.ShowAttachedFlyout(illegalInput);
@@ -83,9 +84,11 @@ namespace GrammarAnalyzer
                         try
                         {
                             Nonterminals.First(elem => elem.Token == nonterminal.Text);
+                            // duplicated nontermianl
                         }
                         catch (Exception)
                         {
+                            // accepted nonterminal
                             Nonterminals.Add(new TokenViewer
                             {
                                 Token = nonterminal.Text,
@@ -135,6 +138,7 @@ namespace GrammarAnalyzer
                     try
                     {
                         Nonterminals.First(elem => elem.Token == terminal.Text);
+                        // typed termianl is same as one existed nonterminal
                         if (sender is FrameworkElement illegalInput)
                         {
                             FlyoutBase.ShowAttachedFlyout(illegalInput);
@@ -145,9 +149,11 @@ namespace GrammarAnalyzer
                         try
                         {
                             Terminals.First(elem => elem.Token == terminal.Text);
+                            // duplicated terminal
                         }
                         catch (Exception)
                         {
+                            // accepted terminal
                             Terminals.Add(new TokenViewer
                             {
                                 Token = terminal.Text,
@@ -188,6 +194,7 @@ namespace GrammarAnalyzer
             if (StartNonterminal != null)
             {
                 Nonterminals.Remove(Nonterminals.First(elem => elem.Token == StartNonterminal.Token));
+                // reset the past starter
                 Nonterminals.Add(new TokenViewer
                 {
                     Token = StartNonterminal.Token,
@@ -195,6 +202,7 @@ namespace GrammarAnalyzer
                     Type = TokenType.Nonterminal
                 });
             }
+            // reset the current starter
             Nonterminals.Remove(Nonterminals.First(elem => elem.Token == nonterminal));
             StartNonterminal = new TokenViewer
             {
@@ -213,13 +221,34 @@ namespace GrammarAnalyzer
 
         private void ToProduction_Click(object sender, RoutedEventArgs e)
         {
-            if (StartNonterminal == null
-                || Nonterminals.Count == 0
-                || Terminals.Count == 0)
+            if (Nonterminals.Count == 0)
             {
-                if (sender is FrameworkElement noStartNonterminal)
+                if (sender is FrameworkElement illegaltokens)
                 {
-                    FlyoutBase.ShowAttachedFlyout(noStartNonterminal);
+                    NoStartNonterminal.Visibility = Visibility.Collapsed;
+                    NoNonterminal.Visibility = Visibility.Visible;
+                    NoTerminal.Visibility = Visibility.Collapsed;
+                    FlyoutBase.ShowAttachedFlyout(illegaltokens);
+                }
+            }
+            else if (Terminals.Count == 0)
+            {
+                if (sender is FrameworkElement illegaltokens)
+                {
+                    NoStartNonterminal.Visibility = Visibility.Collapsed;
+                    NoNonterminal.Visibility = Visibility.Collapsed;
+                    NoTerminal.Visibility = Visibility.Visible;
+                    FlyoutBase.ShowAttachedFlyout(illegaltokens);
+                }
+            }
+            else if (StartNonterminal == null)
+            {
+                if (sender is FrameworkElement illegaltokens)
+                {
+                    NoStartNonterminal.Visibility = Visibility.Visible;
+                    NoNonterminal.Visibility = Visibility.Collapsed;
+                    NoTerminal.Visibility = Visibility.Collapsed;
+                    FlyoutBase.ShowAttachedFlyout(illegaltokens);
                 }
             }
             else
@@ -271,74 +300,22 @@ namespace GrammarAnalyzer
                     }
                 }
 
-                if (lines.Count < 2)
+                /*
+                0: nonterminals
+                1: terminals
+                n: START nonterminal
+                */
+                if (lines.Count < 3)
                 {
                     return;
                 }
-
-                List<string> nonterminals = lines[0].Split(' ').ToList();
-                for (int index = 0; index < nonterminals.Count; ++index)
-                {
-                    if (string.IsNullOrWhiteSpace(nonterminals[index]))
-                    {
-                        nonterminals.Remove(nonterminals[index]);
-                    }
-                    else
-                    {
-                        nonterminals[index].Replace(" ", "");
-                    }
-                }
-
-                List<string> terminals = lines[1].Split(' ').ToList();
-                for (int index = 0; index < terminals.Count; ++index)
-                {
-                    if (string.IsNullOrWhiteSpace(terminals[index]))
-                    {
-                        terminals.Remove(terminals[index]);
-                    }
-                    else
-                    {
-                        terminals[index].Replace(" ", "");
-                    }
-                }
-
-                List<string> productions = new List<string>();
-                int lineIndex = 2;
-                while (lineIndex < lines.Count)
-                {
-                    if (!string.IsNullOrWhiteSpace(lines[lineIndex]))
-                    {
-                        lines[lineIndex].Replace(" ", "");
-                        if (lines[lineIndex].StartsWith('#'))
-                        {
-                            lineIndex++;
-                            break;
-                        }
-                        productions.Add(lines[lineIndex]);
-                    }
-                    lineIndex++;
-                }
-
-                if (lineIndex == lines.Count)
-                {
-                    return;
-                }
-
-                while (lineIndex < lines.Count
-                    && string.IsNullOrWhiteSpace(lines[lineIndex]))
-                {
-                    lineIndex++;
-                }
-
-                if (lineIndex == lines.Count)
-                {
-                    return;
-                }
-
-                string start = lines[lineIndex].Replace(" ", "");
 
                 await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                    () => OnLoadGrammarCallBack(nonterminals, terminals, productions, start));
+                    () => OnLoadGrammarCallBack(lines[0].Split(' ').ToList(),
+                        lines[1].Split(' ').ToList(), 
+                        lines.GetRange(2, lines.Count - 3), 
+                        lines.Last().Remove(lines.Last().IndexOf("START: "), "START: ".Length))
+                    );
             }
         }
 
@@ -383,7 +360,7 @@ namespace GrammarAnalyzer
             ProductionsLoadByLocal = new ObservableCollection<ProductionViewer>();
             foreach (var item in productions)
             {
-                string[] nonterminalAndCandidate = item.Split('#');
+                string[] nonterminalAndCandidate = item.Split('→');
                 if (nonterminalAndCandidate.Length != 2)
                 {
                     ProductionsLoadByLocal = null;
@@ -398,13 +375,10 @@ namespace GrammarAnalyzer
                             Nonterminal = Nonterminals.First(elem => elem.Token.Equals(nonterminalAndCandidate[0])),
                             Candidates = new List<TokenViewer>()
                         };
-                        string[] candidates = nonterminalAndCandidate[1].Split('.');
+                        string[] candidates = nonterminalAndCandidate[1].Split(' ');
                         foreach (var elem in candidates)
                         {
-                            if (!string.IsNullOrWhiteSpace(elem))
-                            {
-                                newProduction.Candidates.Add(Nonterminals.Concat(Terminals).First(e => e.Token.Equals(elem)));
-                            }
+                            newProduction.Candidates.Add(Nonterminals.Concat(Terminals).First(e => e.Token.Equals(elem)));
                         }
                         ProductionsLoadByLocal.Add(newProduction);
                     }
