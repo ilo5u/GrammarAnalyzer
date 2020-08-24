@@ -1,6 +1,16 @@
 #include "pch.h"
 #include "LLGrammar.h"
 
+static std::string IntToString(int num)
+{
+	std::string str;
+	while (num) {
+		str.insert(str.begin(), '0' + num % 10);
+		num /= 10;
+	}
+	return str;
+}
+
 /// <summary>
 /// 移除语句中的空白字符以及制表符
 /// </summary>
@@ -453,11 +463,11 @@ std::string LLGrammar::Analyze(const char _Word[])
 	Tokens analysisStack{ {Token{ Token::Type::TERMINAL, '$' }, this->start} };
 	Tokens::const_iterator input = tokens.begin();
 	int step = 1;
-	char buf[BUFSIZ] = { 0 };
+	std::string buf{ IntToString(step) };
 	do
 	{
 		/* 步骤 */
-		sprintf(buf, "%d", step);
+		// sprintf_s(buf, "%d", step);
 		description += buf;
 		description += '\t';
 		step++;
@@ -556,7 +566,8 @@ std::string LLGrammar::Analyze(const char _Word[])
 		}
 	} while (analysisStack.back().attribute.compare("$") != 0 && input != tokens.end());
 	/* 步骤 */
-	sprintf(buf, "%d", step + 1);
+	buf = IntToString(step + 1);
+	// sprintf_s(buf, "%d", step + 1);
 	description += buf;
 	description += '\t';
 	step++;

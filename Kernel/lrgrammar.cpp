@@ -1,6 +1,16 @@
 #include "pch.h"
 #include "lrgrammar.h"
 
+static std::string IntToString(int num)
+{
+	std::string str;
+	while (num) {
+		str.insert(str.begin(), '0' + num % 10);
+		num /= 10;
+	}
+	return str;
+}
+
 /// <summary>
 /// ÒÆ³ýÓï¾äÖÐµÄ¿Õ°××Ö·ûÒÔ¼°ÖÆ±í·û
 /// </summary>
@@ -641,8 +651,9 @@ std::string LRGrammar::GetAnalysisSheet() const
 
 	for (int state = 0; state < this->dfaStatesCnt; ++state)
 	{
-		char number[BUFSIZ];
-		sprintf(number, "%d\t", state);
+		std::string number{ IntToString(state) + "\t" };
+		// char number[BUFSIZ];
+		// sprintf_s(number, "%d\t", state);
 		description += number;
 		for (const auto& elem : terminals)
 		{
@@ -651,8 +662,9 @@ std::string LRGrammar::GetAnalysisSheet() const
 				Action act = this->actions.at({ state, elem });
 				if (act.type == AType::SHIFT)
 				{
-					char shift[BUFSIZ];
-					sprintf(shift, "Shift %d", act.nextState);
+					std::string shift{ "Shift " + IntToString(act.nextState) };
+					// char shift[BUFSIZ];
+					// sprintf_s(shift, "Shift %d", act.nextState);
 					description += shift;
 				}
 				else if (act.type == AType::REDUC)
@@ -681,8 +693,9 @@ std::string LRGrammar::GetAnalysisSheet() const
 						description += " ¡¤ ";
 						if (act.type == AType::SHIFT)
 						{
-							char shift[BUFSIZ];
-							sprintf(shift, "Shift %d", act.nextState);
+							std::string shift{ "Shift " + IntToString(act.nextState) };
+							// char shift[BUFSIZ];
+							// sprintf_s(shift, "Shift %d", act.nextState);
 							description += shift;
 						}
 						else if (act.type == AType::REDUC)
@@ -716,8 +729,9 @@ std::string LRGrammar::GetAnalysisSheet() const
 		{
 			if (this->gotos.find({ state, elem }) != this->gotos.end())
 			{
-				char next[BUFSIZ];
-				sprintf(next, "%d", this->gotos.at({ state, elem }));
+				std::string next{ IntToString(this->gotos.at({state, elem})) };
+				// char next[BUFSIZ];
+				// sprintf_s(next, "%d", this->gotos.at({ state, elem }));
 				description += next;
 			}
 			else
@@ -761,10 +775,11 @@ std::string LRGrammar::Analyze(const char _Word[]) const
 
 	Tokens::const_iterator input = tokens.begin();
 	int step = 1;
-	char buf[BUFSIZ] = { 0x0 };
+	std::string buf{ IntToString(step) };
+	// char buf[BUFSIZ] = { 0x0 };
 	while (input != tokens.end())
 	{
-		sprintf(buf, "%d", step);
+		// sprintf_s(buf, "%d", step);
 		step++;
 		description += buf;
 		description += '\t';
@@ -772,7 +787,8 @@ std::string LRGrammar::Analyze(const char _Word[]) const
 		/* ×´Ì¬Õ» */
 		for (const auto& state : stateStack)
 		{
-			sprintf(buf, "%d ", state);
+			buf = IntToString(state);
+			// sprintf_s(buf, "%d ", state);
 			description += buf;
 		}
 		description += '\t';
@@ -798,7 +814,8 @@ std::string LRGrammar::Analyze(const char _Word[]) const
 
 				++input;
 
-				sprintf(buf, "Shift %d", action.nextState);
+				buf = "Shift " + IntToString(action.nextState);
+				// sprintf_s(buf, "Shift %d", action.nextState);
 				description += buf;
 				description += '\n';
 			}
