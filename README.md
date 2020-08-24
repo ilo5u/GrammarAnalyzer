@@ -7,7 +7,7 @@ This app can automatically generate analysis sheet of specific grammar.e.g. LL(1
 
 You can easily get this app on *Windows App Store* by typing "语法分析器" to search and install it, like this,
 
-![search](C:\Users\livew\Desktop\App\search.png)
+<img src="https://github.com/ilo5u/GrammarAnalyzer/tree/master/Pics/search.png">
 
 代码整体分为三部分：
 
@@ -32,7 +32,7 @@ In *Principle of Compiling* course, how to build the analysis sheet and simulate
 
 ## Tool Bar
 
-<img src="C:\Users\livew\Desktop\App\home.png" alt="home" style="zoom:50%;" />
+<img src="https://github.com/ilo5u/GrammarAnalyzer/tree/master/Pics/home.png" style="zoom:50%;" />
 
 The left *tool bar* has tow buttons, the upper one guides to the home page as the above shows, and the reset one to *help* page, where you can access the web [link](https://github.com/ilo5u/GrammarAnalyzer) to the *README.md* if you forget how to use the app.
 
