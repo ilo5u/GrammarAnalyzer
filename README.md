@@ -29,4 +29,16 @@ The whole project including parts as,
 In *Principle of Compiling* course, how to build the analysis sheet and simulate the analysis process are essential but clumsy. I do not think the costing time is valuable, thus this app appears.
 
 # Guide
+
+## Tool Bar
+
+<img src="C:\Users\livew\Desktop\App\home.png" alt="home" style="zoom:50%;" />
+
+The left *tool bar* has tow buttons, the upper one guides to the home page as the above shows, and the reset one to *help* page, where you can access the web [link](https://github.com/ilo5u/GrammarAnalyzer) to the *README.md* if you forget how to use the app.
+
+## Import
+
+
+
 后续有空再进行完善
+

@@ -73,6 +73,7 @@ namespace GrammarAnalyzer
                     try
                     {
                         Terminals.First(elem => elem.Token == nonterminal.Text);
+                        // typed nonterminal is same as one existed terminal
                         if (sender is FrameworkElement illegalInput)
                         {
                             FlyoutBase.ShowAttachedFlyout(illegalInput);
@@ -83,9 +84,11 @@ namespace GrammarAnalyzer
                         try
                         {
                             Nonterminals.First(elem => elem.Token == nonterminal.Text);
+                            // duplicated nontermianl
                         }
                         catch (Exception)
                         {
+                            // accepted nonterminal
                             Nonterminals.Add(new TokenViewer
                             {
                                 Token = nonterminal.Text,
@@ -135,6 +138,7 @@ namespace GrammarAnalyzer
                     try
                     {
                         Nonterminals.First(elem => elem.Token == terminal.Text);
+                        // typed termianl is same as one existed nonterminal
                         if (sender is FrameworkElement illegalInput)
                         {
                             FlyoutBase.ShowAttachedFlyout(illegalInput);
@@ -145,9 +149,11 @@ namespace GrammarAnalyzer
                         try
                         {
                             Terminals.First(elem => elem.Token == terminal.Text);
+                            // duplicated terminal
                         }
                         catch (Exception)
                         {
+                            // accepted terminal
                             Terminals.Add(new TokenViewer
                             {
                                 Token = terminal.Text,
@@ -188,6 +194,7 @@ namespace GrammarAnalyzer
             if (StartNonterminal != null)
             {
                 Nonterminals.Remove(Nonterminals.First(elem => elem.Token == StartNonterminal.Token));
+                // reset the past starter
                 Nonterminals.Add(new TokenViewer
                 {
                     Token = StartNonterminal.Token,
@@ -195,6 +202,7 @@ namespace GrammarAnalyzer
                     Type = TokenType.Nonterminal
                 });
             }
+            // reset the current starter
             Nonterminals.Remove(Nonterminals.First(elem => elem.Token == nonterminal));
             StartNonterminal = new TokenViewer
             {
@@ -213,13 +221,34 @@ namespace GrammarAnalyzer
 
         private void ToProduction_Click(object sender, RoutedEventArgs e)
         {
-            if (StartNonterminal == null
-                || Nonterminals.Count == 0
-                || Terminals.Count == 0)
+            if (Nonterminals.Count == 0)
             {
-                if (sender is FrameworkElement noStartNonterminal)
+                if (sender is FrameworkElement illegaltokens)
                 {
-                    FlyoutBase.ShowAttachedFlyout(noStartNonterminal);
+                    NoStartNonterminal.Visibility = Visibility.Collapsed;
+                    NoNonterminal.Visibility = Visibility.Visible;
+                    NoTerminal.Visibility = Visibility.Collapsed;
+                    FlyoutBase.ShowAttachedFlyout(illegaltokens);
+                }
+            }
+            else if (Terminals.Count == 0)
+            {
+                if (sender is FrameworkElement illegaltokens)
+                {
+                    NoStartNonterminal.Visibility = Visibility.Collapsed;
+                    NoNonterminal.Visibility = Visibility.Collapsed;
+                    NoTerminal.Visibility = Visibility.Visible;
+                    FlyoutBase.ShowAttachedFlyout(illegaltokens);
+                }
+            }
+            else if (StartNonterminal == null)
+            {
+                if (sender is FrameworkElement illegaltokens)
+                {
+                    NoStartNonterminal.Visibility = Visibility.Visible;
+                    NoNonterminal.Visibility = Visibility.Collapsed;
+                    NoTerminal.Visibility = Visibility.Collapsed;
+                    FlyoutBase.ShowAttachedFlyout(illegaltokens);
                 }
             }
             else
