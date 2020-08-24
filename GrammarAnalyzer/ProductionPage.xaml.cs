@@ -293,7 +293,7 @@ namespace GrammarAnalyzer
                         break;
                 }
             }
-            toSave += '\n';
+            toSave = toSave.Remove(toSave.LastIndexOf(' ')) + '\n';
             foreach (var item in tokens)
             {
                 switch (item.Type)
@@ -305,10 +305,10 @@ namespace GrammarAnalyzer
                         break;
                 }
             }
-            toSave += '\n';
+            toSave = toSave.Remove(toSave.LastIndexOf(' ')) + '\n';
             foreach (var item in productions)
             {
-                string production = item.Nonterminal.Token + "#";
+                string production = item.Nonterminal.Token + '→';
                 foreach (var token in item.Candidates)
                 {
                     switch (token.Type)
@@ -325,17 +325,15 @@ namespace GrammarAnalyzer
                         default:
                             break;
                     }
-                    production += '.';
+                    production += ' ';
                 }
-                production.Remove(production.LastIndexOf('.'));
-                toSave += production + '\n';
+                toSave += production.Remove(production.LastIndexOf(' ')) + '\n';
             }
-            toSave += "#\n";
             foreach (var item in tokens)
             {
                 if (item.IsStart == true)
                 {
-                    toSave += item.Token;
+                    toSave += "START: " + item.Token;
                 }
             }
 
