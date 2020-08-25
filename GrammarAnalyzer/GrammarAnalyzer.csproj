@@ -138,6 +138,8 @@
     <Compile Include="HelpPage.xaml.cs">
       <DependentUpon>HelpPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Kernel\Grammar.cs" />
+    <Compile Include="Kernel\LLGrammar.cs" />
     <Compile Include="LLAnalysisPage.xaml.cs">
       <DependentUpon>LLAnalysisPage.xaml</DependentUpon>
     </Compile>
@@ -266,12 +268,6 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls.DataGrid">
       <Version>6.1.1</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Kernel\Kernel.vcxproj">
-      <Project>{c827ce99-7a7a-472e-b6fb-80fabcd2eaca}</Project>
-      <Name>Kernel</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
