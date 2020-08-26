@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,7 +13,7 @@ namespace GrammarAnalyzer.Kernel
 {
     public class Grammar
     {
-        public class Token
+        public struct Token
         {
             public enum Type
             {
@@ -20,104 +23,311 @@ namespace GrammarAnalyzer.Kernel
             }
             public Type _type;
             public string _attr;
-
-            public Token()
-            {
-                _type = Type.TERMINAL;
-                _attr = "ε";
-            }
-            
-            public Token(Type type)
-            {
-                _type = type;
-            }
-
             public Token(Type type, string attr)
             {
                 _type = type;
                 _attr = attr;
             }
+            public Token(Token token)
+            {
+                _type = token._type;
+                _attr = token._attr;
+            }
+            static public bool operator==(Token t1, Token t2)
+            {
+                return t1._attr == t2._attr;
+            }
+            static public bool operator !=(Token t1, Token t2)
+            {
+                return t1._attr != t2._attr;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is null) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                return obj is Token token && string.Equals(_attr, token._attr, StringComparison.InvariantCulture);
+            }
+            public override int GetHashCode()
+            {
+                return _attr is null ? StringComparer.InvariantCulture.GetHashCode(_attr) : 0;
+            }
         }
 
-        public class Prodc
+        protected static Token Epsilon = new Token(Token.Type.TERMINAL, "ε");
+
+        public struct Prodc
         {
             public Token _left;
             public List<Token> _right;
+
+            public Prodc(Token left, List<Token> right)
+            {
+                _left = left;
+                _right = new List<Token>(right);
+            }
+            public Prodc(Prodc prodc)
+            {
+                _left = prodc._left;
+                _right = new List<Token>(prodc._right);
+            }
+            static public bool operator==(Prodc p1, Prodc p2)
+            {
+                bool eq = p1._right.Count == p2._right.Count && p1._left == p2._left;
+                if (eq)
+                {
+                    for (int i = 0; i < p1._right.Count; ++i)
+                        eq &= p1._right[i] == p2._right[i];
+                }
+                return eq;
+            }
+            static public bool operator !=(Prodc p1, Prodc p2)
+            {
+                bool eq = p1._right.Count == p2._right.Count && p1._left == p2._left;
+                if (eq)
+                {
+                    for (int i = 0; i < p1._right.Count; ++i)
+                        eq &= p1._right[i] == p2._right[i];
+                }
+                return !eq;
+            }
+            private bool Equals(Prodc prodc)
+            {
+                bool eq = _right.Count == prodc._right.Count && _left == prodc._left;
+                if (eq)
+                {
+                    for (int i = 0; i < _right.Count; ++i)
+                        eq &= _right[i] == prodc._right[i];
+                }
+                return eq;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is null) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                return obj is Prodc prodc && Equals(prodc);
+            }
+            public override int GetHashCode()
+            {
+                return _right is null ? _left.GetHashCode() * 17 + _right.GetHashCode() : 0;
+            }
         }
-        public SortedSet<Token> _tokens = new SortedSet<Token>();
-        public SortedSet<Token> _terms = new SortedSet<Token>();
-        public SortedSet<Token> _nonterms = new SortedSet<Token>();
-        public SortedSet<Prodc> _prodcs = new SortedSet<Prodc>();
-        public Token _start = new Token();
+
+        protected HashSet<Token> _tokens = new HashSet<Token>();
+        protected HashSet<Token> _terms = new HashSet<Token>();
+        protected HashSet<Token> _nonterms = new HashSet<Token>();
+        protected HashSet<Prodc> _prodcs = new HashSet<Prodc>();
+        protected Token _start = new Token();
 
         public bool InsertTerminal(string term)
-        {
-            Token token = new Token { _type = Token.Type.TERMINAL, _attr = term };
-            return _tokens.Add(token) && _terms.Add(token);
-        }
-
+            => _tokens.Add(new Token { _type = Token.Type.TERMINAL, _attr = term })
+                && _terms.Add(new Token { _type = Token.Type.TERMINAL, _attr = term });
+        public bool InsertToken(Token token)
+            => token._type == Token.Type.TERMINAL ?
+                _tokens.Add(new Token(token)) && _terms.Add(new Token(token)) : _tokens.Add(new Token(token)) && _nonterms.Add(new Token(token));
         public bool InsertNonterminal(string nonterm)
+            => _tokens.Add(new Token { _type = Token.Type.NONTERMINAL, _attr = nonterm })
+                && _nonterms.Add(new Token { _type = Token.Type.NONTERMINAL, _attr = nonterm });
+
+        public bool InsertProduction(Token token, List<Token> can)
+            => _prodcs.Add(new Prodc(token, can));
+
+        public bool InsertProduction(Prodc prodc)
+            => _prodcs.Add(new Prodc(prodc));
+
+        public void SetStart(string nonterm)
+            => _start = new Token(_nonterms.First(e => string.Equals(e._attr, nonterm, StringComparison.InvariantCulture))); /*new Token { _type = Token.Type.NONTERMINAL, _attr = nonterm };*/
+
+        protected Dictionary<Token, HashSet<Token>> _fis = new Dictionary<Token, HashSet<Token>>();
+        protected Dictionary<Token, HashSet<Token>> _fos = new Dictionary<Token, HashSet<Token>>();
+
+        protected struct TokenPair
         {
-            Token token = new Token { _type = Token.Type.NONTERMINAL, _attr = nonterm };
-            return _tokens.Add(token) && _nonterms.Add(token);
+            public Token _t1;
+            public Token _t2;
+            public TokenPair(Token t1, Token t2)
+            {
+                _t1 = new Token(t1);
+                _t2 = new Token(t2);
+            }
+            public TokenPair(TokenPair tp)
+            {
+                _t1 = new Token(tp._t1);
+                _t2 = new Token(tp._t2);
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is null) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                return obj is TokenPair tp && ((_t1 == tp._t1 && _t2 == tp._t2) || (_t1 == tp._t2 && _t2 == tp._t1));
+            }
+            public override int GetHashCode()
+            {
+                return _t1.GetHashCode() * 17 + _t2.GetHashCode();
+            }
+            static public bool operator==(TokenPair t1, TokenPair t2)
+            {
+                return (t1._t1 == t2._t1 && t1._t2 == t2._t2) || (t1._t1 == t2._t2 && t1._t2 == t2._t1);
+            }
+            static public bool operator !=(TokenPair t1, TokenPair t2)
+            {
+                return !((t1._t1 == t2._t1 && t1._t2 == t2._t2) || (t1._t1 == t2._t2 && t1._t2 == t2._t1));
+            }
+            public Token Contains(Token token)
+            {
+                return _t1 == token ? _t2 : (_t2 == token ? _t1 : token);
+            }
         }
 
-        public bool InsertProduction(string nonterm, List<Token> tokens) => _prodcs.Add(
-                new Prodc
-                {
-                    _left = new Token
-                    {
-                        _type = Token.Type.NONTERMINAL,
-                        _attr = nonterm
-                    },
-                    _right = tokens
-                });
-
-        public bool InsertProduction(Prodc prodc) => _prodcs.Add(prodc);
-
-        public void SetStart(string nonterm) => _start = _nonterms.First(e => e._attr.Equals(nonterm)); /*new Token { _type = Token.Type.NONTERMINAL, _attr = nonterm };*/
-
-        public Dictionary<Token, List<Token>> _fis = new Dictionary<Token, List<Token>>();
-        public Dictionary<Token, List<Token>> _fos = new Dictionary<Token, List<Token>>();
-
-        public void RunSpecificFIS(Token nonterm, List<Token> tokens)
+        protected HashSet<TokenPair> _connect = new HashSet<TokenPair>();
+        protected HashSet<Token> _checked = new HashSet<Token>();
+        /// <summary>
+        /// Check unreachable tokens
+        /// </summary>
+        /// <returns></returns>
+        public bool ConnectivityTest()
         {
-            List<Token> sfis = new List<Token>();
-            Token fr = tokens.First();
+            _connect = new HashSet<TokenPair>();
+            _checked = new HashSet<Token>();
+            _prodcs.ToList().ForEach(u => 
+                u._right.ForEach(v => { 
+                    _connect.Add(new TokenPair(u._left, v));
+                    if (v == Epsilon)
+                    {
+                        _terms.Add(Epsilon);
+                        _tokens.Add(Epsilon);
+                    }
+                })
+            );
+            Queue<Token> oris = new Queue<Token>();
+            oris.Enqueue(_tokens.First());
+            
+            while (oris.Count > 0)
+            {
+                Token cur = oris.Dequeue();
+                _checked.Add(cur);
+                _connect.ToList().ForEach(e =>
+                {
+                    Token adj = e.Contains(cur);
+                    if (adj != cur && !_checked.Contains(adj))
+                    {
+                        oris.Enqueue(adj);
+                    }
+                });
+            }
+            return _checked.Count == _tokens.Count;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="can"></param>
+        /// <returns></returns>
+        private HashSet<Token> SubFIS(List<Token> can)
+        {
+            Token fr = can.First();
             switch (fr._type)
             {
                 case Token.Type.TERMINAL:
-                    sfis.Add(fr);
-                    break;
+                    return new HashSet<Token> { fr };
                 case Token.Type.NONTERMINAL:
+                    _fis.TryGetValue(fr, out HashSet<Token> fis);
+                    if (fis is null)
                     {
-                        if (_fis.TryGetValue(fr, out sfis))
+                        return null;
+                    }
+                    else
+                    {
+                        if (can.Count != 1 && fis.Contains(Epsilon))
                         {
-                            bool epsilon = false;
-                            sfis.ForEach(e =>
-                            {
-                                if (e._attr.Equals('ε'))
-                                {
-                                    epsilon = true;
-                                }
-                            });
-                            if (epsilon)
-                            {
-                                tokens.RemoveAt(0);
-                                if (tokens.Count > 0)
-                                {
-                                    RunSpecificFIS(nonterm, tokens);
-                                }
-                            }
+                            return fis.Concat(SubFIS(can.Skip(1).ToList())).ToHashSet();
+                        }
+                        else
+                        {
+                            return fis;
                         }
                     }
-                    break;
                 case Token.Type.INVALID:
                     break;
                 default:
                     break;
             }
-            _fis.Add(nonterm, sfis);
+            return null;
+        }
+        /// <summary>
+        /// You'd better run this after left-recursion and common-tokens dismissed with extened LL(1) syntax
+        /// </summary>
+        /// <param name="nonterm"></param>
+        /// <param name="tokens"></param>
+        public bool RunFIS()
+        {
+            _fis = new Dictionary<Token, HashSet<Token>>();
+            _prodcs.ToList().ForEach(e =>
+            {
+                Token fr = e._right.First();
+                if (fr._type == Token.Type.TERMINAL)
+                {
+                    _fis.TryGetValue(e._left, out HashSet<Token> fis);
+                    if (fis is null)
+                    {
+                        _fis.Add(e._left, new HashSet<Token> { new Token(fr) });
+                    }
+                    else
+                    {
+                        fis.Add(new Token(fr));
+                    }
+                }
+            });
+
+            int fc = 0;
+            do
+            {
+                // first pass
+                _prodcs.ToList().ForEach(e =>
+                {
+                    Token fr = e._right.First();
+                    if (fr._type == Token.Type.NONTERMINAL)
+                    {
+                        HashSet<Token> more = SubFIS(e._right);
+                        if (!(more is null))
+                        {
+                            _fis.TryGetValue(e._left, out HashSet<Token> fis);
+                            if (fis is null)
+                            {
+                                _fis.Add(e._left, more);
+                            }
+                            else
+                            {
+                                fis = fis.Concat(more).ToHashSet();
+                            }
+                        }
+                    }
+                });
+                _fis.ToList().ForEach(e => fc += e.Value.Count);
+
+                // second pass
+                _prodcs.ToList().ForEach(e =>
+                {
+                    Token fr = e._right.First();
+                    if (fr._type == Token.Type.NONTERMINAL)
+                    {
+                        HashSet<Token> more = SubFIS(e._right);
+                        if (!(more is null))
+                        {
+                            _fis.TryGetValue(e._left, out HashSet<Token> fis);
+                            if (fis is null)
+                            {
+                                _fis.Add(e._left, more);
+                            }
+                            else
+                            {
+                                fis = fis.Concat(more).ToHashSet();
+                            }
+                        }
+                    }
+                });
+                _fis.ToList().ForEach(e => fc -= e.Value.Count);
+            } while (fc != 0);
+
+            return _fis.Count == _nonterms.Count;
         }
     }
 }
