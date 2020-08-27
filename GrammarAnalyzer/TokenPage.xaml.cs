@@ -58,9 +58,7 @@ namespace GrammarAnalyzer
             if (e.Key == Windows.System.VirtualKey.Enter
                 && !string.IsNullOrEmpty(nonterminal.Text))
             {
-                if (nonterminal.Text.Contains("@")
-                    || nonterminal.Text.Contains("#")
-                    || nonterminal.Text.Contains("."))
+                if (nonterminal.Text.Contains('ε'))
                 {
                     nonterminal.Text = "";
                     if (sender is FrameworkElement illegalInput)
@@ -123,9 +121,7 @@ namespace GrammarAnalyzer
             if (e.Key == Windows.System.VirtualKey.Enter
                 && !string.IsNullOrEmpty(terminal.Text))
             {
-                if (terminal.Text.Contains("@")
-                    || terminal.Text.Contains("#")
-                    || terminal.Text.Contains("."))
+                if (terminal.Text.Contains('ε'))
                 {
                     terminal.Text = "";
                     if (sender is FrameworkElement illegalInput)
