@@ -1,4 +1,7 @@
+**VERY VERY VERY grateful for the new policy released by Microsoft the recent years, causing my app's backend kernel in C++ and C++/Cli all banned when publishing a new version on *App Store*. I have to rewrite the whole kernel in C# instead of just plugging a simple *.dll.**
+
 # GrammarAnalyzer
+
 对于给定文法，自动生成LL(1)、SLR(1)、LR(1)分析表
 
 This app can automatically generate analysis sheet of specific grammar.e.g. LL(1), SLR(1) and LR(1). Mainly used for those clumsy questions in courses like *Principles of Compiling*.
@@ -7,7 +10,7 @@ This app can automatically generate analysis sheet of specific grammar.e.g. LL(1
 
 You can easily get this app on *Windows App Store* by typing "语法分析器" to search and install it, like this,
 
-<img src="https://github.com/ilo5u/GrammarAnalyzer/blob/master/Pics/search.png"/>
+<img src="https://github.com/ilo5u/GrammarAnalyzer/tree/master/Pics/search.png"/>
 
 代码整体分为三部分：
 
@@ -32,7 +35,7 @@ In *Principle of Compiling* course, how to build the analysis sheet and simulate
 
 ## Tool Bar
 
-<img src="https://github.com/ilo5u/GrammarAnalyzer/blob/master/Pics/home.png" style="zoom:50%;" />
+<img src="https://github.com/ilo5u/GrammarAnalyzer/tree/master/Pics/home.png" style="zoom:50%;" />
 
 The left *tool bar* has tow buttons, the upper one guides to the home page as the above shows, and the reset one to *help* page, where you can access the web [link](https://github.com/ilo5u/GrammarAnalyzer) to the *README.md* if you forget how to use the app.
 
@@ -41,4 +44,6 @@ The left *tool bar* has tow buttons, the upper one guides to the home page as th
 
 
 后续有空再进行完善
+
+To do ...
 
