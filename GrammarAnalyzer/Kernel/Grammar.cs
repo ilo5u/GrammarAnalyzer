@@ -359,7 +359,7 @@ namespace GrammarAnalyzer.Kernel
             if (_fis.Count != _nonterms.Count) _fis.Clear();
             return _fis.Count == _nonterms.Count ? new Dictionary<Token, HashSet<Token>>(_fis) : null;
         }
-        private HashSet<Token> SubFOS(Token dest, List<Token> sours, List<Token> done)
+        protected HashSet<Token> SubFOS(Token dest, List<Token> sours, List<Token> done)
         {
             HashSet<Token> fos = new HashSet<Token>();
             foreach (var prodc in _prodcs)

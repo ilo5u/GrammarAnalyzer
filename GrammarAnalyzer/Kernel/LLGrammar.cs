@@ -134,18 +134,6 @@ namespace GrammarAnalyzer.Kernel
             } while (!noCommonTokens);
         }
 
-        private Dictionary<Token, List<Token>> GetFirstSet()
-        {
-            Dictionary<Token, List<Token>> fis = new Dictionary<Token, List<Token>>();
-            return fis;
-        }
-
-        private Dictionary<Token, List<Token>> GetFollowSet(Dictionary<Token, List<Token>> fis)
-        {
-            Dictionary<Token, List<Token>> fos = new Dictionary<Token, List<Token>>();
-            return fos;
-        }
-
         public LLGrammar(Grammar raw)
         {
             _tokens = raw.Tokens;
