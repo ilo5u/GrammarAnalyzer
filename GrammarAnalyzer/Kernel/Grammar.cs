@@ -55,6 +55,7 @@ namespace GrammarAnalyzer.Kernel
         }
 
         protected static Token Epsilon = new Token(Token.Type.TERMINAL, "ε");
+        protected static Token Dollar = new Token(Token.Type.TERMINAL, "＄");
 
         public struct Prodc
         {
@@ -180,6 +181,18 @@ namespace GrammarAnalyzer.Kernel
                 return _t1 == token ? _t2 : (_t2 == token ? _t1 : token);
             }
         }
+        protected void Extend()
+        {
+            Token dot = new Token(_start);
+            do
+            {
+                dot._attr += '\'';
+            } while (_tokens.Contains(dot));
+            _nonterms.Add(dot); _tokens.Add(dot);
+
+            _prodcs.Add(new Prodc(dot, new List<Token> { _start }));
+            _start = new Token(dot);
+        }
 
         protected HashSet<TokenPair> _connect = new HashSet<TokenPair>();
         protected HashSet<Token> _checked = new HashSet<Token>();
@@ -226,7 +239,7 @@ namespace GrammarAnalyzer.Kernel
         /// </summary>
         /// <param name="can"></param>
         /// <returns></returns>
-        private HashSet<Token> SubFIS(List<Token> can)
+        protected HashSet<Token> SubFIS(List<Token> can)
         {
             Token fr = can.First();
             switch (fr._type)
@@ -267,7 +280,7 @@ namespace GrammarAnalyzer.Kernel
         /// </summary>
         /// <param name="nonterm"></param>
         /// <param name="tokens"></param>
-        public bool RunFIS()
+        public Dictionary<Token, HashSet<Token>> RunFIS()
         {
             _fis = new Dictionary<Token, HashSet<Token>>();
             foreach (var e in _prodcs)
@@ -343,8 +356,157 @@ namespace GrammarAnalyzer.Kernel
                     fc -= item.Value.Count;
                 }
             } while (fc != 0);
+            if (_fis.Count != _nonterms.Count) _fis.Clear();
+            return _fis.Count == _nonterms.Count ? new Dictionary<Token, HashSet<Token>>(_fis) : null;
+        }
+        private HashSet<Token> SubFOS(Token dest, List<Token> sours, List<Token> done)
+        {
+            HashSet<Token> fos = new HashSet<Token>();
+            foreach (var prodc in _prodcs)
+            {
+                List<Token> can = prodc._right;
+                
+                for (int i = 0; i < can.Count; ++i)
+                {
+                    if (can[i] == dest)
+                    {
+                        bool epsilon = false;
+                        if (++i < can.Count)
+                        {
+                            HashSet<Token> more = SubFIS(can.Skip(i).ToList());
+                            if (!(more is null))
+                            {
+                                foreach (var token in more)
+                                {
+                                    if (token == Epsilon)
+                                    {
+                                        epsilon = true;
+                                    }
+                                    else
+                                    {
+                                        fos.Add(token);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            epsilon = true;
+                        }
+                        if (epsilon)
+                        {
+                            if (done.Contains(prodc._left))
+                            {
+                                _fos.TryGetValue(prodc._left, out HashSet<Token> more);
+                                if (!(more is null))
+                                {
+                                    fos = fos.Concat(more).ToHashSet();
+                                }
+                            }
+                            else if (prodc._left != sours.First()
+                                && prodc._left != dest)
+                            {
+                                if (!sours.Skip(1).Contains(prodc._left))
+                                {
+                                    sours.Add(prodc._left);
+                                    HashSet<Token> more = SubFOS(prodc._left, sours, done);
+                                    if (sours.Count == 0)
+                                    {
+                                        return null;
+                                    }
+                                    else
+                                    {
+                                        sours.Remove(sours.Last());
+                                        if (prodc._left == _start)
+                                        {
+                                            fos.Add(Dollar);
+                                        }
+                                        if (!(more is null))
+                                        {
+                                            fos = fos.Concat(more).ToHashSet();
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    sours.Clear();
+                                    return null;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return fos;
+        }
+        public Dictionary<Token, HashSet<Token>> RunFOS()
+        {
+            _fos = new Dictionary<Token, HashSet<Token>>
+            {
+                { _start, new HashSet<Token> { Dollar } }
+            };
 
-            return _fis.Count == _nonterms.Count;
+            List<Token> done = new List<Token>();
+            int fc;
+            do
+            {
+                fc = 0;
+                // first pass
+                foreach (var token in _nonterms)
+                {
+                    if (!done.Contains(token))
+                    {
+                        List<Token> sours = new List<Token> { token };
+                        HashSet<Token> more = SubFOS(token, sours, done);
+                        if (!(more is null))
+                        {
+                            _fos.TryGetValue(token, out HashSet<Token> fos);
+                            if (fos is null)
+                            {
+                                _fos.Add(token, more);
+                            }
+                            else
+                            {
+                                _fos[token] = fos.Concat(more).ToHashSet();
+                            }
+                            done.Add(token);
+                        }
+                    }
+                }
+                foreach (var item in _fis)
+                {
+                    fc += item.Value.Count;
+                }
+
+                // second pass
+                foreach (var token in _nonterms)
+                {
+                    if (!done.Contains(token))
+                    {
+                        List<Token> sours = new List<Token> { token };
+                        HashSet<Token> more = SubFOS(token, sours, done);
+                        if (!(more is null))
+                        {
+                            _fos.TryGetValue(token, out HashSet<Token> fos);
+                            if (fos is null)
+                            {
+                                _fos.Add(token, more);
+                            }
+                            else
+                            {
+                                _fos[token] = fos.Concat(more).ToHashSet();
+                            }
+                            done.Add(token);
+                        }
+                    }
+                }
+                foreach (var item in _fis)
+                {
+                    fc -= item.Value.Count;
+                }
+            } while (fc != 0);
+            if (done.Count != _nonterms.Count) _fos.Clear();
+            return done.Count == _nonterms.Count ? new Dictionary<Token, HashSet<Token>>(_fos) : null;
         }
         public HashSet<Token> Tokens => new HashSet<Token>(_tokens);
         public HashSet<Token> Terms => new HashSet<Token>(_terms);

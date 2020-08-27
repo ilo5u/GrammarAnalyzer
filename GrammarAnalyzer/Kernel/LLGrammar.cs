@@ -12,8 +12,8 @@ namespace GrammarAnalyzer.Kernel
     {
         private Dictionary<Token, int> _rs = new Dictionary<Token, int>();
         private Dictionary<Token, int> _cs = new Dictionary<Token, int>();
-        private Dictionary<KeyValuePair<int, int>, Prodc> _sheet = new Dictionary<KeyValuePair<int, int>, Prodc>();
-        private Dictionary<KeyValuePair<int, int>, List<Prodc>> _dpsheet = new Dictionary<KeyValuePair<int, int>, List<Prodc>>();
+        private Dictionary<ValueTuple<int, int>, List<Prodc>> _sheet = new Dictionary<ValueTuple<int, int>, List<Prodc>>();
+        //private Dictionary<KeyValuePair<int, int>, List<Prodc>> _dpsheet = new Dictionary<KeyValuePair<int, int>, List<Prodc>>();
 
         private void EliminateLeftRecursion()
         {
@@ -134,19 +134,6 @@ namespace GrammarAnalyzer.Kernel
             } while (!noCommonTokens);
         }
 
-        private void Extend()
-        {
-            Token dot = new Token(_start);
-            do
-            {
-                dot._attr += '\'';
-            } while (_tokens.Contains(dot));
-            _nonterms.Add(dot); _tokens.Add(dot);
-
-            _prodcs.Add(new Prodc(dot, new List<Token> { _start }));
-            _start = new Token(dot);
-        }
-
         private Dictionary<Token, List<Token>> GetFirstSet()
         {
             Dictionary<Token, List<Token>> fis = new Dictionary<Token, List<Token>>();
@@ -170,6 +157,87 @@ namespace GrammarAnalyzer.Kernel
             Extend();
             EliminateLeftRecursion();
             EliminateCommonLeftTokens();
+        }
+
+        public Dictionary<ValueTuple<int, int>, List<Prodc>> BuildAnalysisSheet()
+        {
+            if (_fis.Count == 0 || _fos.Count == 0)
+                return null;
+            _rs = new Dictionary<Token, int>();
+            _cs = new Dictionary<Token, int>();
+
+            // reset row and column indices
+            int index = 0;
+            foreach (var item in _nonterms)
+            {
+                _rs.Add(item, index++);
+            }
+
+            index = 0;
+            foreach (var item in _terms)
+            {
+                _cs.Add(item, index++);
+            }
+            foreach (var item in _nonterms)
+            {
+                _cs.Add(item, index++);
+            }
+
+            foreach (var prodc in _prodcs)
+            {
+                // ri, li must own values
+                _rs.TryGetValue(prodc._left, out int ri);
+
+                HashSet<Token> fis = SubFIS(prodc._right);
+                foreach (var elem in fis)
+                {
+                    if (elem == Epsilon)
+                    {
+                        // need follow set
+                        _fos.TryGetValue(prodc._left, out HashSet<Token> fos);
+                        foreach (var token in fos)
+                        {
+                            // ri, li must own values
+                            _cs.TryGetValue(token, out int li);
+
+                            bool added = false;
+                            foreach (var unit in _sheet)
+                            {
+                                if (unit.Key == (ri, li))
+                                {
+                                    unit.Value.Add(prodc);
+                                    added = true;
+                                }
+                            }
+                            if (!added)
+                            {
+                                _sheet.Add((ri, li), new List<Prodc> { prodc });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // ri, li must own values
+                        _cs.TryGetValue(elem, out int li);
+
+                        bool added = false;
+                        foreach (var unit in _sheet)
+                        {
+                            if (unit.Key == (ri, li))
+                            {
+                                unit.Value.Add(prodc);
+                                added = true;
+                            }
+                        }
+                        if (!added)
+                        {
+                            _sheet.Add((ri, li), new List<Prodc> { prodc });
+                        }
+                    }
+                }
+            }
+
+            return _sheet;
         }
     }
 }
