@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text;
@@ -136,6 +137,8 @@ namespace GrammarAnalyzer.Kernel
 
         public void SetStart(string nonterm)
             => _start = new Token(_nonterms.First(e => string.Equals(e._attr, nonterm, StringComparison.InvariantCulture))); /*new Token { _type = Token.Type.NONTERMINAL, _attr = nonterm };*/
+        public void SetStart(Token token)
+            => _start = new Token(_nonterms.First(e => e == token));
 
         protected Dictionary<Token, HashSet<Token>> _fis = new Dictionary<Token, HashSet<Token>>();
         protected Dictionary<Token, HashSet<Token>> _fos = new Dictionary<Token, HashSet<Token>>();
@@ -188,16 +191,18 @@ namespace GrammarAnalyzer.Kernel
         {
             _connect = new HashSet<TokenPair>();
             _checked = new HashSet<Token>();
-            _prodcs.ToList().ForEach(u => 
-                u._right.ForEach(v => { 
+            foreach (var u in _prodcs)
+            {
+                u._right.ForEach(v =>
+                {
                     _connect.Add(new TokenPair(u._left, v));
                     if (v == Epsilon)
                     {
                         _terms.Add(Epsilon);
                         _tokens.Add(Epsilon);
                     }
-                })
-            );
+                });
+            }
             Queue<Token> oris = new Queue<Token>();
             oris.Enqueue(_tokens.First());
             
@@ -205,19 +210,19 @@ namespace GrammarAnalyzer.Kernel
             {
                 Token cur = oris.Dequeue();
                 _checked.Add(cur);
-                _connect.ToList().ForEach(e =>
+                foreach (var e in _connect)
                 {
                     Token adj = e.Contains(cur);
                     if (adj != cur && !_checked.Contains(adj))
                     {
                         oris.Enqueue(adj);
                     }
-                });
+                }
             }
             return _checked.Count == _tokens.Count;
         }
         /// <summary>
-        /// 
+        /// check every sub-candidates
         /// </summary>
         /// <param name="can"></param>
         /// <returns></returns>
@@ -238,7 +243,12 @@ namespace GrammarAnalyzer.Kernel
                     {
                         if (can.Count != 1 && fis.Contains(Epsilon))
                         {
-                            return fis.Concat(SubFIS(can.Skip(1).ToList())).ToHashSet();
+                            HashSet<Token> more = SubFIS(can.Skip(1).ToList());
+                            if (more is null)
+                            {
+                                return fis;
+                            }
+                            return fis.Concat(more).ToHashSet();
                         }
                         else
                         {
@@ -260,7 +270,7 @@ namespace GrammarAnalyzer.Kernel
         public bool RunFIS()
         {
             _fis = new Dictionary<Token, HashSet<Token>>();
-            _prodcs.ToList().ForEach(e =>
+            foreach (var e in _prodcs)
             {
                 Token fr = e._right.First();
                 if (fr._type == Token.Type.TERMINAL)
@@ -275,13 +285,14 @@ namespace GrammarAnalyzer.Kernel
                         fis.Add(new Token(fr));
                     }
                 }
-            });
+            }
 
             int fc = 0;
             do
             {
+                fc = 0;
                 // first pass
-                _prodcs.ToList().ForEach(e =>
+                foreach (var e in _prodcs)
                 {
                     Token fr = e._right.First();
                     if (fr._type == Token.Type.NONTERMINAL)
@@ -296,15 +307,18 @@ namespace GrammarAnalyzer.Kernel
                             }
                             else
                             {
-                                fis = fis.Concat(more).ToHashSet();
+                                _fis[e._left] = fis.Concat(more).ToHashSet();
                             }
                         }
                     }
-                });
-                _fis.ToList().ForEach(e => fc += e.Value.Count);
+                }
+                foreach (var item in _fis)
+                {
+                    fc += item.Value.Count;
+                }
 
                 // second pass
-                _prodcs.ToList().ForEach(e =>
+                foreach (var e in _prodcs)
                 {
                     Token fr = e._right.First();
                     if (fr._type == Token.Type.NONTERMINAL)
@@ -319,15 +333,23 @@ namespace GrammarAnalyzer.Kernel
                             }
                             else
                             {
-                                fis = fis.Concat(more).ToHashSet();
+                                _fis[e._left] = fis.Concat(more).ToHashSet();
                             }
                         }
                     }
-                });
-                _fis.ToList().ForEach(e => fc -= e.Value.Count);
+                }
+                foreach (var item in _fis)
+                {
+                    fc -= item.Value.Count;
+                }
             } while (fc != 0);
 
             return _fis.Count == _nonterms.Count;
         }
+        public HashSet<Token> Tokens => new HashSet<Token>(_tokens);
+        public HashSet<Token> Terms => new HashSet<Token>(_terms);
+        public HashSet<Token> Nonterms => new HashSet<Token>(_nonterms);
+        public HashSet<Prodc> Prodcs => new HashSet<Prodc>(_prodcs);
+        public Token Start => new Token(_start);
     }
 }
