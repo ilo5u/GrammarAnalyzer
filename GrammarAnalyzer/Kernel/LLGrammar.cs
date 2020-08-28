@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GrammarAnalyzer.Kernel
 {
-    public class LLGrammar : Grammar
+    public class LL : Grammar
     {
         private Dictionary<Token, int> _rs = new Dictionary<Token, int>();
         private Dictionary<Token, int> _cs = new Dictionary<Token, int>();
@@ -134,7 +134,7 @@ namespace GrammarAnalyzer.Kernel
             } while (!noCommonTokens);
         }
 
-        public LLGrammar(Grammar raw)
+        public LL(Grammar raw)
         {
             _tokens = raw.Tokens;
             _terms = raw.Terms;

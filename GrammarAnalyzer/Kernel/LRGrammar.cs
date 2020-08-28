@@ -8,9 +8,9 @@ using System.Text;
 
 namespace GrammarAnalyzer.Kernel
 {
-    public class LRGrammar : Grammar
+    abstract public class LRBaseGrammar : Grammar
     {
-        public struct Action
+        protected struct Action
         {
             public enum Type
             {
@@ -103,36 +103,38 @@ namespace GrammarAnalyzer.Kernel
                 return true;
             }
         }
-        private Dictionary<ValueTuple<int, Token>, List<Action>> _acs = new Dictionary<(int, Token), List<Action>>();
-        private Dictionary<ValueTuple<int, Token>, int> _goto = new Dictionary<(int, Token), int>();
+        protected Dictionary<ValueTuple<int, Token>, List<Action>> _acs = new Dictionary<(int, Token), List<Action>>();
+        protected Dictionary<ValueTuple<int, Token>, int> _goto = new Dictionary<(int, Token), int>();
 
-        private struct SLRDeriv
+        protected class DerivBase
         {
             public Prodc _prodc;
             public int _point;
-            public SLRDeriv(Prodc prodc, int point)
+            public DerivBase(Prodc prodc, int point)
             {
                 _prodc = new Prodc(prodc);
                 _point = point;
             }
-            public SLRDeriv(SLRDeriv deriv)
+            public DerivBase(DerivBase deriv)
             {
                 _prodc = new Prodc(deriv._prodc);
                 _point = deriv._point;
             }
-            static public bool operator ==(SLRDeriv d1, SLRDeriv d2)
+            static public bool operator ==(DerivBase d1, DerivBase d2)
             {
+                if (d1 is null || d2 is null) return false;
                 return d1._point == d2._point && d1._prodc == d2._prodc;
             }
-            static public bool operator !=(SLRDeriv d1, SLRDeriv d2)
+            static public bool operator !=(DerivBase d1, DerivBase d2)
             {
+                if (d1 is null || d2 is null) return false;
                 return !(d1._point == d2._point && d1._prodc == d2._prodc);
             }
             public override bool Equals(object obj)
             {
                 if (obj is null) return false;
                 if (ReferenceEquals(this, obj)) return true;
-                return obj is SLRDeriv deriv && _point == deriv._point && _prodc == deriv._prodc;
+                return obj is DerivBase deriv && _point == deriv._point && _prodc == deriv._prodc;
             }
             public override int GetHashCode()
             {
@@ -140,32 +142,60 @@ namespace GrammarAnalyzer.Kernel
             }
         }
 
-        private struct SLRState
+        protected class StateBase
         {
             public int _id;
-            public HashSet<SLRDeriv> _derivs;
             public readonly HashSet<Prodc> _prodcs;
-            public SLRState(int id, HashSet<SLRDeriv> derivs, HashSet<Prodc> prodcs)
+            public StateBase(int id, HashSet<Prodc> prodcs)
             {
                 _id = id;
-                _derivs = derivs;
                 _prodcs = prodcs;
+            }
+            virtual protected void Extend() { }
+        }
+        protected class DFABase
+        {
+            public Dictionary<ValueTuple<int, Token>, int> _trfs;
+            public DFABase() => _trfs = new Dictionary<(int, Token), int>();
+        }
+        protected int _dfaStateCount = 0;
+    }
+
+    public class SLR : LRBaseGrammar
+    {
+        private class Deriv : DerivBase
+        {
+            public Deriv(Prodc prodc, int point) : base(prodc, point)
+            {
+            }
+            public Deriv(Deriv deriv) : base(deriv._prodc, deriv._point)
+            {
+            }
+        }
+        private class State : StateBase
+        {
+            public HashSet<Deriv> _derivs = new HashSet<Deriv>();
+
+            public State(int id, HashSet<Prodc> prodcs, HashSet<Deriv> derivs) : base(id, prodcs)
+            {
+                _derivs = new HashSet<Deriv>(derivs);
                 Extend();
             }
-            private void Extend()
+
+            override protected void Extend()
             {
-                Queue<SLRDeriv> unhandled = new Queue<SLRDeriv>(_derivs);
+                Queue<Deriv> unhandled = new Queue<Deriv>(_derivs);
                 while (unhandled.Count > 0)
                 {
-                    SLRDeriv deriv = unhandled.Dequeue();
+                    Deriv deriv = unhandled.Dequeue();
                     if (deriv._point < deriv._prodc._right.Count
                         && deriv._prodc._right[deriv._point]._type == Token.Type.NONTERMINAL)
                     {
                         foreach (var prodc in _prodcs)
                         {
-                            SLRDeriv added = new SLRDeriv(prodc, 0);
                             if (prodc._left == deriv._prodc._right[deriv._point])
                             {
+                                var added = new Deriv(prodc, 0);
                                 _derivs.Add(added);
                                 unhandled.Enqueue(added);
                             }
@@ -173,8 +203,9 @@ namespace GrammarAnalyzer.Kernel
                     }
                 }
             }
-            static public bool operator ==(SLRState s1, SLRState s2)
+            static public bool operator ==(State s1, State s2)
             {
+                if (s1 is null || s2 is null) return false;
                 if (s1._derivs.Count != s2._derivs.Count) return false;
                 foreach (var d in s1._derivs)
                 {
@@ -182,7 +213,7 @@ namespace GrammarAnalyzer.Kernel
                 }
                 return true;
             }
-            static public bool operator !=(SLRState s1, SLRState s2)
+            static public bool operator !=(State s1, State s2)
             {
                 return !(s1 == s2);
             }
@@ -190,28 +221,139 @@ namespace GrammarAnalyzer.Kernel
             {
                 if (obj is null) return false;
                 if (ReferenceEquals(this, obj)) return true;
-                return obj is SLRState state && this == state;
+                return obj is State state && this == state;
             }
             public override int GetHashCode()
             {
                 return _derivs.GetHashCode();
             }
         }
-        private class SLRDFA
+        private class DFA : DFABase
         {
-            public List<SLRState> _states;
-            public Dictionary<ValueTuple<int, Token>, int> _trfs;
-
-            public SLRDFA(SLRState start)
+            public List<State> _states;
+            public DFA(State start) : base()
             {
-                _states = new List<SLRState> { start };
-                _trfs = new Dictionary<(int, Token), int>();
+                _states = new List<State> { start };
             }
         }
-        private int _dfaStateCount = 0;
-        private SLRDFA BuildSLRDFA()
+        private DFA BuildDFA()
         {
-            SLRDFA dfa = new SLRDFA(new SLRState());
+            DFA dfa = new DFA(new State());
+            return dfa;
+        }
+    }
+
+    public class LR : LRBaseGrammar
+    {
+        private class Deriv : DerivBase
+        {
+            public Token _tail;
+            public Deriv(Prodc prodc, int point, Token tail) : base(prodc, point)
+            {
+                _tail = new Token(tail);
+            }
+            public Deriv(Deriv deriv) : base(deriv._prodc, deriv._point)
+            {
+                _tail = new Token(deriv._tail);
+            }
+            static public bool operator ==(Deriv d1, Deriv d2)
+            {
+                if (d1 is null || d2 is null) return false;
+                return d1._point == d2._point && d1._tail == d2._tail && d1._prodc == d2._prodc;
+            }
+            static public bool operator !=(Deriv d1, Deriv d2)
+            {
+                if (d1 is null || d2 is null) return false;
+                return !(d1._point == d2._point && d1._tail == d2._tail && d1._prodc == d2._prodc);
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is null) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                return obj is Deriv deriv && this == deriv;
+            }
+            public override int GetHashCode()
+            {
+                return _tail.GetHashCode() * 17 + base.GetHashCode();
+            }
+        }
+        private class State : StateBase
+        {
+            public HashSet<Deriv> _derivs = new HashSet<Deriv>();
+            public readonly LR _lr = null;
+
+            public State(int id, HashSet<Prodc> prodcs, HashSet<Deriv> derivs, LR lr) : base(id, prodcs)
+            {
+                _derivs = new HashSet<Deriv>(derivs);
+                _lr = lr;
+                Extend();
+            }
+
+            override protected void Extend()
+            {
+                Queue<Deriv> unhandled = new Queue<Deriv>(_derivs);
+                while (unhandled.Count > 0)
+                {
+                    Deriv deriv = unhandled.Dequeue();
+                    if (deriv._point < deriv._prodc._right.Count
+                        && deriv._prodc._right[deriv._point]._type == Token.Type.NONTERMINAL)
+                    {
+                        List<Token> can = (deriv._point + 1 < deriv._prodc._right.Count) ?
+                            deriv._prodc._right.Skip(deriv._point + 1).ToList() : new List<Token>();
+                        can.Add(deriv._tail);
+
+                        HashSet<Token> fis = _lr.SubFIS(can);
+                        foreach (var prodc in _prodcs)
+                        {
+                            foreach (var token in fis)
+                            {
+                                if (prodc._left == deriv._prodc._right[deriv._point])
+                                {
+                                    var added = new Deriv(prodc, 0, token);
+                                    _derivs.Add(added);
+                                    unhandled.Enqueue(added);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            static public bool operator ==(State s1, State s2)
+            {
+                if (s1 is null || s2 is null) return false;
+                if (s1._derivs.Count != s2._derivs.Count) return false;
+                foreach (var d in s1._derivs)
+                {
+                    if (!s2._derivs.Contains(d)) return false;
+                }
+                return true;
+            }
+            static public bool operator !=(State s1, State s2)
+            {
+                return !(s1 == s2);
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is null) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                return obj is State state && this == state;
+            }
+            public override int GetHashCode()
+            {
+                return _derivs.GetHashCode();
+            }
+        }
+        private class DFA : DFABase
+        {
+            public List<State> _states;
+            public DFA(State start) : base()
+            {
+                _states = new List<State> { start };
+            }
+        }
+        private DFA BuildDFA()
+        {
+            DFA dfa = new DFA(new State());
             return dfa;
         }
     }
