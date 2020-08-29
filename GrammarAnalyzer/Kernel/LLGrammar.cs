@@ -12,7 +12,7 @@ namespace GrammarAnalyzer.Kernel
     {
         private Dictionary<Token, int> _rs = new Dictionary<Token, int>();
         private Dictionary<Token, int> _cs = new Dictionary<Token, int>();
-        private Dictionary<ValueTuple<int, int>, List<Prodc>> _sheet = new Dictionary<ValueTuple<int, int>, List<Prodc>>();
+        private Dictionary<ValueTuple<int, int>, HashSet<Prodc>> _sheet = new Dictionary<ValueTuple<int, int>, HashSet<Prodc>>();
         //private Dictionary<KeyValuePair<int, int>, List<Prodc>> _dpsheet = new Dictionary<KeyValuePair<int, int>, List<Prodc>>();
 
         private void EliminateLeftRecursion()
@@ -134,40 +134,41 @@ namespace GrammarAnalyzer.Kernel
             } while (!noCommonTokens);
         }
 
-        public LL(Grammar raw)
+        public LL(Grammar raw) : base(raw)
         {
-            _tokens = raw.Tokens;
-            _terms = raw.Terms;
-            _nonterms = raw.Nonterms;
-            _prodcs = raw.Prodcs;
-            _start = raw.Start;
             // build LL-syntax analyzer
             Extend();
             EliminateLeftRecursion();
             EliminateCommonLeftTokens();
         }
 
-        public Dictionary<ValueTuple<int, int>, List<Prodc>> BuildAnalysisSheet()
+        public ValueTuple<Dictionary<int, Token>, Dictionary<int, Token>, Dictionary<ValueTuple<int, int>, HashSet<Prodc>>> BuildAnalysisSheet()
         {
             if (_fis.Count == 0 || _fos.Count == 0)
-                return null;
+                return (null, null, null);
             _rs = new Dictionary<Token, int>();
             _cs = new Dictionary<Token, int>();
+
+            var irs = new Dictionary<int, Token>();
+            var ics = new Dictionary<int, Token>();
 
             // reset row and column indices
             int index = 0;
             foreach (var item in _nonterms)
             {
+                irs.Add(index, item);
                 _rs.Add(item, index++);
             }
 
             index = 0;
             foreach (var item in _terms)
             {
+                ics.Add(index, item);
                 _cs.Add(item, index++);
             }
             foreach (var item in _nonterms)
             {
+                ics.Add(index, item);
                 _cs.Add(item, index++);
             }
 
@@ -199,7 +200,7 @@ namespace GrammarAnalyzer.Kernel
                             }
                             if (!added)
                             {
-                                _sheet.Add((ri, li), new List<Prodc> { prodc });
+                                _sheet.Add((ri, li), new HashSet<Prodc> { prodc });
                             }
                         }
                     }
@@ -219,13 +220,13 @@ namespace GrammarAnalyzer.Kernel
                         }
                         if (!added)
                         {
-                            _sheet.Add((ri, li), new List<Prodc> { prodc });
+                            _sheet.Add((ri, li), new HashSet<Prodc> { prodc });
                         }
                     }
                 }
             }
 
-            return _sheet;
+            return (irs, ics, _sheet);
         }
     }
 }
