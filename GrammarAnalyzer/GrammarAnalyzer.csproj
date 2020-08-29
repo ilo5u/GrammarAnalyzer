@@ -140,6 +140,7 @@
     </Compile>
     <Compile Include="Kernel\Grammar.cs" />
     <Compile Include="Kernel\LLGrammar.cs" />
+    <Compile Include="Kernel\LRGrammar.cs" />
     <Compile Include="LLAnalysisPage.xaml.cs">
       <DependentUpon>LLAnalysisPage.xaml</DependentUpon>
     </Compile>
