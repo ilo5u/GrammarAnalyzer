@@ -1,4 +1,4 @@
-**VERY VERY VERY grateful for the new policy released by Microsoft the recent years, causing my app's backend kernel in C++ and C++/Cli all banned when publishing a new version on *App Store*. I have to rewrite the whole kernel in C# instead of just plugging a simple *.dll.**
+**VERY VERY VERY grateful for the new policy released by Microsoft the recent years, causing my app's backend kernel in C++ and C++/Cli all banned when publishing a new version on *App Store*. I have to rewrite the whole kernel in C# instead of just plugging a simple .dll.**
 
 # GrammarAnalyzer
 
@@ -37,7 +37,7 @@ In *Principle of Compiling* course, how to build the analysis sheet and simulate
 
 <img src="https://github.com/ilo5u/GrammarAnalyzer/tree/master/Pics/home.png" style="zoom:50%;" />
 
-The left *tool bar* has tow buttons, the upper one guides to the home page as the above shows, and the reset one to *help* page, where you can access the web [link](https://github.com/ilo5u/GrammarAnalyzer) to the *README.md* if you forget how to use the app.
+The left *tool bar* has tow buttons, the upper one guides to the home page as the above shows, and the other to *help* page, where you can access the web [link](https://github.com/ilo5u/GrammarAnalyzer) to the *README.md* if you forget how to use the app.
 
 ## Import
 
@@ -46,4 +46,3 @@ The left *tool bar* has tow buttons, the upper one guides to the home page as th
 后续有空再进行完善
 
 To do ...
-
