@@ -11,9 +11,10 @@ namespace GrammarAnalyzer.Kernel
 {
     abstract public class LRBaseGrammar : Grammar
     {
+        public LRBaseGrammar(Grammar raw) : base(raw) { Extend(); }
         static readonly protected string To = "→";
         static readonly protected string Dot = "·";
-        protected struct Action
+        public struct Action
         {
             public enum Type
             {
@@ -108,7 +109,6 @@ namespace GrammarAnalyzer.Kernel
         }
         protected Dictionary<ValueTuple<int, Token>, List<Action>> _acts = new Dictionary<(int, Token), List<Action>>();
         protected Dictionary<ValueTuple<int, Token>, int> _goto = new Dictionary<(int, Token), int>();
-
         protected class DerivBase
         {
             public Prodc _prodc;
@@ -144,7 +144,6 @@ namespace GrammarAnalyzer.Kernel
                 return _prodc.GetHashCode() * 17 + _point;
             }
         }
-
         protected class StateBase
         {
             public int _id;
@@ -162,10 +161,51 @@ namespace GrammarAnalyzer.Kernel
             public DFABase() => _trfs = new Dictionary<(int, Token), int>();
         }
         protected int _dfaStateCount = 0;
+        public ValueTuple<Dictionary<int, Token>, Dictionary<ValueTuple<int, int>, List<Action>>> BuildAnalysisSheet()
+        {
+            if (_acts.Count == 0 || _goto.Count == 0) return (null, null);
+
+            Dictionary<ValueTuple<int, int>, List<Action>> sheet = new Dictionary<(int, int), List<Action>>();
+            List<Token> seq = _terms.ToList();
+            seq.Remove(Epsilon);
+            seq.Add(Dollar);
+            seq = seq.Concat(_nonterms.ToList()).ToList();
+            seq.Remove(_start);
+
+            Dictionary<int, Token> index = new Dictionary<int, Token>();
+            for (int col = 0; col < seq.Count; ++col)
+            {
+                index.Add(col, seq[col]);
+            }
+
+            for (int id = 0; id < _dfaStateCount; ++id)
+            {
+                for (int col = 0; col < seq.Count; ++col)
+                {
+                    switch (seq[col]._type)
+                    {
+                        case Token.Type.TERMINAL:
+                            _acts.TryGetValue((id, seq[col]), out List<Action> action);
+                            if (action is null) continue;
+                            sheet.Add((id, col), action);
+                            break;
+                        case Token.Type.NONTERMINAL:
+                            ;
+                            if (!_goto.ContainsKey((id, seq[col]))) continue;
+                            sheet.Add((id, col), new List<Action> { new Action(_goto[(id, seq[col])]) });
+                            break;
+                        default:
+                            return (null, null);
+                    }
+                }
+            }
+            return (index, sheet);
+        }
     }
 
     public class SLR : LRBaseGrammar
     {
+        public SLR(Grammar grammar) : base(grammar) { }
         private class Deriv : DerivBase
         {
             public Deriv(Prodc prodc, int point) : base(prodc, point)
@@ -199,8 +239,10 @@ namespace GrammarAnalyzer.Kernel
                             if (prodc._left == deriv._prodc._right[deriv._point])
                             {
                                 var added = new Deriv(prodc, 0);
-                                _derivs.Add(added);
-                                unhandled.Enqueue(added);
+                                if (_derivs.Add(added))
+                                {
+                                    unhandled.Enqueue(added);
+                                }
                             }
                         }
                     }
@@ -241,67 +283,58 @@ namespace GrammarAnalyzer.Kernel
         }
         private DFA BuildDFA()
         {
-            try
+            Prodc start = _prodcs.First(e => e._left == _start);
+            DFA dfa = new DFA(new State(0, _prodcs, new HashSet<Deriv>() { new Deriv(start, 0) }));
+
+            Queue<State> unhandled = new Queue<State>();
+            unhandled.Enqueue(dfa._states.First());
+            while (unhandled.Count > 0)
             {
-                Prodc start = _prodcs.First(e => e._left == _start);
-                DFA dfa = new DFA(new State(0, _prodcs, new HashSet<Deriv>() { new Deriv(start, 0) }));
-
-                Queue<State> unhandled = new Queue<State>();
-                unhandled.Enqueue(dfa._states.First());
-                while (unhandled.Count > 0)
+                State cur = unhandled.Dequeue();
+                foreach (var token in _tokens)
                 {
-                    State cur = unhandled.Dequeue();
-                    foreach (var token in _tokens)
+                    HashSet<Deriv> derivs = new HashSet<Deriv>();
+                    foreach (var deriv in cur._derivs)
                     {
-                        HashSet<Deriv> derivs = new HashSet<Deriv>();
-                        foreach (var deriv in cur._derivs)
+                        if (deriv._point < deriv._prodc._right.Count
+                            && deriv._prodc._right[deriv._point] == token)
                         {
-                            if (deriv._point < deriv._prodc._right.Count
-                                && deriv._prodc._right[deriv._point] == token)
-                            {
-                                derivs.Add(new Deriv(deriv._prodc, deriv._point + 1));
-                            }
+                            derivs.Add(new Deriv(deriv._prodc, deriv._point + 1));
                         }
-                        if (derivs.Count == 0) continue;
-
-                        State state = dfa._states.First(e => e._derivs == derivs);
-                        if (state is null)
+                    }
+                    if (derivs.Count == 0) continue;
+                    State added = new State(dfa._states.Count, _prodcs, derivs);
+                    try
+                    {
+                        State state = dfa._states.First(e => e == added);
+                        if (dfa._trfs.ContainsKey((cur._id, token)))
                         {
-                            state = new State(dfa._states.Count, _prodcs, derivs);
-                            unhandled.Enqueue(state);
-                            if (dfa._trfs.ContainsKey((cur._id, token)))
-                            {
-                                dfa._trfs[(cur._id, token)] = dfa._states.Count;
-                            }
-                            else
-                            {
-                                dfa._trfs.Add((cur._id, token), dfa._states.Count);
-                            }
-                            dfa._states.Add(state);
+                            dfa._trfs[(cur._id, token)] = state._id;
                         }
                         else
                         {
-                            if (dfa._trfs.ContainsKey((cur._id, token)))
-                            {
-                                dfa._trfs[(cur._id, token)] = state._id;
-                            }
-                            else
-                            {
-                                dfa._trfs.Add((cur._id, token), state._id);
-                            }
+                            dfa._trfs.Add((cur._id, token), state._id);
                         }
                     }
+                    catch (InvalidOperationException)
+                    {
+                        unhandled.Enqueue(added);
+                        if (dfa._trfs.ContainsKey((cur._id, token)))
+                        {
+                            dfa._trfs[(cur._id, token)] = dfa._states.Count;
+                        }
+                        else
+                        {
+                            dfa._trfs.Add((cur._id, token), dfa._states.Count);
+                        }
+                        dfa._states.Add(added);
+                    }
                 }
+            }
 
-                return dfa;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return dfa;
         }
-
-        private Dictionary<int, List<string>> BuildDerivs()
+        public Dictionary<int, List<string>> BuildDerivs()
         {
             DFA dfa = BuildDFA();
             _dfaStateCount = dfa._states.Count;
@@ -374,6 +407,7 @@ namespace GrammarAnalyzer.Kernel
 
     public class LR : LRBaseGrammar
     {
+        public LR(Grammar raw) : base(raw) { }
         private class Deriv : DerivBase
         {
             public Token _tail;
@@ -439,8 +473,10 @@ namespace GrammarAnalyzer.Kernel
                                 if (prodc._left == deriv._prodc._right[deriv._point])
                                 {
                                     var added = new Deriv(prodc, 0, token);
-                                    _derivs.Add(added);
-                                    unhandled.Enqueue(added);
+                                    if (_derivs.Add(added))
+                                    {
+                                        unhandled.Enqueue(added);
+                                    }
                                 }
                             }
                         }
@@ -474,16 +510,127 @@ namespace GrammarAnalyzer.Kernel
         }
         private class DFA : DFABase
         {
-            public List<State> _states;
+            public HashSet<State> _states;
             public DFA(State start) : base()
             {
-                _states = new List<State> { start };
+                _states = new HashSet<State> { start };
             }
         }
-        //private DFA BuildDFA()
-        //{
-        //    DFA dfa = new DFA(new State());
-        //    return dfa;
-        //}
+        private DFA BuildDFA()
+        {
+            Prodc start = _prodcs.First(e => e._left == _start);
+            DFA dfa = new DFA(new State(0, _prodcs, new HashSet<Deriv>() { new Deriv(start, 0, Dollar) }, this));
+
+            Queue<State> unhandled = new Queue<State>();
+            unhandled.Enqueue(dfa._states.First());
+            while (unhandled.Count > 0)
+            {
+                State cur = unhandled.Dequeue();
+                foreach (var token in _tokens)
+                {
+                    HashSet<Deriv> derivs = new HashSet<Deriv>();
+                    foreach (var deriv in cur._derivs)
+                    {
+                        if (deriv._point < deriv._prodc._right.Count
+                            && deriv._prodc._right[deriv._point] == token)
+                        {
+                            derivs.Add(new Deriv(deriv._prodc, deriv._point + 1, deriv._tail));
+                        }
+                    }
+                    if (derivs.Count == 0) continue;
+
+                    State added = new State(dfa._states.Count, _prodcs, derivs, this);
+                    try
+                    {
+                        State state = dfa._states.First(e => e == added);
+                        if (dfa._trfs.ContainsKey((cur._id, token)))
+                        {
+                            dfa._trfs[(cur._id, token)] = state._id;
+                        }
+                        else
+                        {
+                            dfa._trfs.Add((cur._id, token), state._id);
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        unhandled.Enqueue(added);
+                        if (dfa._trfs.ContainsKey((cur._id, token)))
+                        {
+                            dfa._trfs[(cur._id, token)] = dfa._states.Count;
+                        }
+                        else
+                        {
+                            dfa._trfs.Add((cur._id, token), dfa._states.Count);
+                        }
+                        dfa._states.Add(added);
+                    }
+                }
+            }
+
+            return dfa;
+        }
+        public Dictionary<int, List<string>> BuildDerivs()
+        {
+            DFA dfa = BuildDFA();
+            _dfaStateCount = dfa._states.Count;
+
+            Dictionary<int, List<string>> res = new Dictionary<int, List<string>>();
+            foreach (var state in dfa._states)
+            {
+                List<string> vs = new List<string>();
+                foreach (var deriv in state._derivs)
+                {
+                    string desc = deriv._prodc._left._attr + To;
+                    for (int pos = 0; pos < deriv._prodc._right.Count; ++pos)
+                    {
+                        desc += ((pos == deriv._point) ? Dot : "")
+                            + ((deriv._prodc._right[pos] == Epsilon) ? "" : deriv._prodc._right[pos]._attr);
+                    }
+                    desc += (deriv._point == deriv._prodc._right.Count) ? Dot + " " + deriv._tail._attr : " " + deriv._tail._attr;
+                    vs.Add(desc);
+                }
+                res.Add(state._id, vs);
+            }
+
+            foreach (var tr in dfa._trfs)
+            {
+                if (tr.Key.Item2._type == Token.Type.TERMINAL)
+                {
+                    _acts.Add(tr.Key, new List<Action> { new Action(tr.Value) });
+                }
+                else
+                {
+                    _goto.Add(tr.Key, tr.Value);
+                }
+            }
+
+            foreach (var state in dfa._states)
+            {
+                foreach (var deriv in state._derivs)
+                {
+                    if (deriv._prodc._left == _start
+                        && deriv._point == deriv._prodc._right.Count)
+                    {
+                        _acts.Add((state._id, Dollar), new List<Action> { new Action(Action.Type.ACC) });
+                    }
+                    else if (deriv._point == deriv._prodc._right.Count
+                        || deriv._prodc._right.First() == Epsilon)
+                    {
+                        _acts.TryGetValue((state._id, deriv._tail), out List<Action> action);
+                        if (action is null)
+                        {
+                            _acts.Add((state._id, deriv._tail), new List<Action> { new Action(deriv._prodc) });
+                        }
+                        else
+                        {
+                            action.Add(new Action(deriv._prodc));
+                            _acts[(state._id, deriv._tail)] = action;
+                        }
+                    }
+                }
+            }
+            return res;
+        }
     }
 }
