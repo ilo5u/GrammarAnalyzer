@@ -50,7 +50,7 @@ namespace GrammarAnalyzer.Kernel
             }
             public override int GetHashCode()
             {
-                return _attr is null ? StringComparer.InvariantCulture.GetHashCode(_attr) : 0;
+                return _attr is null ? 0 : StringComparer.InvariantCulture.GetHashCode(_attr);
             }
         }
 
@@ -119,6 +119,30 @@ namespace GrammarAnalyzer.Kernel
         protected HashSet<Token> _nonterms = new HashSet<Token>();
         protected HashSet<Prodc> _prodcs = new HashSet<Prodc>();
         protected Token _start = new Token();
+        public Grammar()
+        {
+            _tokens = new HashSet<Token>();
+            _terms = new HashSet<Token>();
+            _nonterms = new HashSet<Token>();
+            _prodcs = new HashSet<Prodc>();
+            _start = new Token();
+            _fis = new Dictionary<Token, HashSet<Token>>();
+            _fos = new Dictionary<Token, HashSet<Token>>();
+            _connect = new HashSet<TokenPair>();
+            _checked = new HashSet<Token>();
+        }
+        public Grammar(Grammar grammar)
+        {
+            grammar._tokens.ToList().ForEach(e => _tokens.Add(new Token(e)));
+            grammar._terms.ToList().ForEach(e => _terms.Add(new Token(e)));
+            grammar._nonterms.ToList().ForEach(e => _nonterms.Add(new Token(e)));
+            grammar._prodcs.ToList().ForEach(e => _prodcs.Add(new Prodc(e)));
+            _start = new Token(grammar._start);
+            _fis = null;
+            _fos = null;
+            _connect = null;
+            _checked = null;
+        }
 
         public bool InsertTerminal(string term)
             => _tokens.Add(new Token { _type = Token.Type.TERMINAL, _attr = term })
