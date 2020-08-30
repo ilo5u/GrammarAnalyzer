@@ -13,8 +13,6 @@ namespace GrammarAnalyzer.Kernel
         private Dictionary<Token, int> _rs = new Dictionary<Token, int>();
         private Dictionary<Token, int> _cs = new Dictionary<Token, int>();
         private Dictionary<ValueTuple<int, int>, HashSet<Prodc>> _sheet = new Dictionary<ValueTuple<int, int>, HashSet<Prodc>>();
-        //private Dictionary<KeyValuePair<int, int>, List<Prodc>> _dpsheet = new Dictionary<KeyValuePair<int, int>, List<Prodc>>();
-
         private void EliminateLeftRecursion()
         {
             List<Token> nonterms = _nonterms.ToList();
@@ -58,10 +56,12 @@ namespace GrammarAnalyzer.Kernel
 
                     betas.ForEach(e => e.Add(new Token(dot)));
                     betas.ForEach(e => _prodcs.Add(new Prodc(token, e)));
+
+                    _terms.Add(Epsilon); _tokens.Add(Epsilon);
+                    _prodcs.Add(new Prodc(dot, new List<Token>() { Epsilon }));
                 }
             }
         }
-
         private void EliminateCommonLeftTokens()
         {
             List<Token> nonterms = _nonterms.ToList();
@@ -133,7 +133,6 @@ namespace GrammarAnalyzer.Kernel
                 }
             } while (!noCommonTokens);
         }
-
         public LL(Grammar raw) : base(raw)
         {
             // build LL-syntax analyzer
@@ -141,7 +140,6 @@ namespace GrammarAnalyzer.Kernel
             EliminateLeftRecursion();
             EliminateCommonLeftTokens();
         }
-
         public ValueTuple<Dictionary<int, Token>, Dictionary<int, Token>, Dictionary<ValueTuple<int, int>, HashSet<Prodc>>> BuildAnalysisSheet()
         {
             if (_fis.Count == 0 || _fos.Count == 0)
@@ -160,14 +158,11 @@ namespace GrammarAnalyzer.Kernel
                 _rs.Add(item, index++);
             }
 
+            _terms.Add(Dollar);
             index = 0;
             foreach (var item in _terms)
             {
-                ics.Add(index, item);
-                _cs.Add(item, index++);
-            }
-            foreach (var item in _nonterms)
-            {
+                if (item == Epsilon) continue;
                 ics.Add(index, item);
                 _cs.Add(item, index++);
             }
@@ -227,6 +222,89 @@ namespace GrammarAnalyzer.Kernel
             }
 
             return (irs, ics, _sheet);
+        }
+        public List<(int, List<Token>, List<Token>, bool, Prodc)> Analyze(List<Token> words)
+        {
+            words.Add(Dollar);
+
+            var res = new List<(int, List<Token>, List<Token>, bool, Prodc)>();
+            List<Token> astack = new List<Token> { Dollar, _start };
+            int step = 0;
+            int index = 0;
+            do
+            {
+                ++step;
+                List<Token> ta = new List<Token>();
+                astack.ForEach(e => ta.Add(e));
+
+                List<Token> rest = new List<Token>();
+                for (int pos = index; pos < words.Count; ++pos)
+                {
+                    rest.Add(words[pos]);
+                }
+
+                Token top = astack.Last();
+                if (top._type == Token.Type.TERMINAL)
+                {
+                    if (top == words[index])
+                    {
+                        astack.RemoveAt(astack.Count - 1);
+                        ++index;
+
+                        res.Add((step, ta, rest, true, new Prodc()));
+                    }
+                    else
+                    {
+
+                        res.Add((step, ta, rest, false, new Prodc()));
+                    }
+                }
+                else
+                {
+                    if (_sheet.TryGetValue((_rs[top], _cs[words[index]]), out HashSet<Prodc> ps))
+                    {
+                        // use the first as default
+                        Prodc sel = ps.First();
+                        res.Add((step, ta, rest, true, sel));
+
+                        astack.RemoveAt(astack.Count - 1);
+                        if (sel._right.First() != Epsilon)
+                        {
+                            List<Token> added = new List<Token>();
+                            sel._right.ForEach(e => added.Add(e));
+                            added.Reverse();
+                            astack = astack.Concat(added).ToList();
+                        }
+                    }
+                    else
+                    {
+                        if (top == words[index])
+                        {
+                            astack.RemoveAt(astack.Count - 1);
+                            ++index;
+
+                            res.Add((step, ta, rest, true, new Prodc()));
+                        }
+                        else
+                        {
+                            res.Add((step, ta, rest, false, new Prodc()));
+                        }
+                    }
+                }
+            } while (astack.Last() != Dollar && index < words.Count && res.Last().Item4);
+            if (res.Last().Item4)
+            {
+                ++step;
+
+                List<Token> rest = new List<Token>();
+                for (int pos = index; pos < words.Count; ++pos)
+                {
+                    rest.Add(words[pos]);
+                }
+
+                res.Add((step, astack, rest, true, new Prodc()));
+            }
+            return res;
         }
     }
 }
