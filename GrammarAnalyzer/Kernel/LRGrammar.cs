@@ -201,6 +201,88 @@ namespace GrammarAnalyzer.Kernel
             }
             return (index, sheet);
         }
+        public List<(int, List<int>, List<Token>, bool, Action)> Analyze(List<Token> words)
+        {
+            var res = new List<(int, List<int>, List<Token>, bool, Action)>();
+
+            words.Add(Dollar);
+            List<int> ss = new List<int>() { 0 };
+            List<Token> ts = new List<Token>() { Dollar };
+
+            int step = 1;
+            for (int pos = 0; pos < words.Count; ++step)
+            {
+                List<int> cs = new List<int>();
+                ss.ForEach(e => cs.Add(e));
+
+                List<Token> ct = new List<Token>();
+                ts.ForEach(e => ct.Add(e));
+
+                List<Token> rt = new List<Token>();
+                for (int rest = pos; rest < words.Count; ++rest)
+                {
+                    rt.Add(words[rest]);
+                }
+
+                Action action;
+                _acts.TryGetValue((ss.Last(), words[pos]), out List<Action> acs);
+                if (!(acs is null))
+                {
+                    // use the first as default
+                    action = acs.First();
+                    switch (action._type)
+                    {
+                        case Action.Type.SHIFT:
+                            ss.Add(action._nextState);
+                            ts.Add(words[pos]);
+                            ++pos;
+
+                            res.Add((step, cs, ct, true, action));
+                            break;
+                        case Action.Type.REDUC:
+                            if (ss.Count <= action._prodc._right.Count
+                                && action._prodc._right.First() != Epsilon)
+                            {
+                                res.Add((step, cs, ct, false, action));
+                            }
+                            else
+                            {
+                                if (action._prodc._right.First() != Epsilon)
+                                {
+                                    ss = ss.Take(ss.Count - action._prodc._right.Count).ToList();
+                                    ts = ts.Take(ts.Count - action._prodc._right.Count).ToList();
+                                }
+                                if (_goto.TryGetValue((ss.Last(), action._prodc._left), out int ns))
+                                {
+                                    ss.Add(ns);
+                                    ts.Add(action._prodc._left);
+
+                                    res.Add((step, cs, ct, true, action));
+                                }
+                                else
+                                {
+                                    res.Add((step, cs, ct, false, action));
+                                }
+                            }
+                            break;
+                        case Action.Type.ACC:
+                            ++pos;
+                            res.Add((step, cs, ct, true, action));
+                            break;
+                        default:
+                            res.Add((step, cs, ct, false, action));
+                            break;
+                    }
+                }
+                else
+                {
+                    res.Add((step, cs, ct, false, new Action()));
+                }
+
+                if (!res.Last().Item4) break;
+            }
+            return res;
+        }
     }
 
     public class SLR : LRBaseGrammar
@@ -570,15 +652,15 @@ namespace GrammarAnalyzer.Kernel
 
             return dfa;
         }
-        public Dictionary<int, List<string>> BuildDerivs()
+        public Dictionary<int, List<(string, string)>> BuildDerivs()
         {
             DFA dfa = BuildDFA();
             _dfaStateCount = dfa._states.Count;
 
-            Dictionary<int, List<string>> res = new Dictionary<int, List<string>>();
+            Dictionary<int, List<(string, string)>> res = new Dictionary<int, List<(string, string)>>();
             foreach (var state in dfa._states)
             {
-                List<string> vs = new List<string>();
+                List<(string, string)> vs = new List<(string, string)>();
                 foreach (var deriv in state._derivs)
                 {
                     string desc = deriv._prodc._left._attr + To;
@@ -587,8 +669,8 @@ namespace GrammarAnalyzer.Kernel
                         desc += ((pos == deriv._point) ? Dot : "")
                             + ((deriv._prodc._right[pos] == Epsilon) ? "" : deriv._prodc._right[pos]._attr);
                     }
-                    desc += (deriv._point == deriv._prodc._right.Count) ? Dot + " " + deriv._tail._attr : " " + deriv._tail._attr;
-                    vs.Add(desc);
+                    desc += (deriv._point == deriv._prodc._right.Count) ? Dot : "";
+                    vs.Add((desc, deriv._tail._attr));
                 }
                 res.Add(state._id, vs);
             }
