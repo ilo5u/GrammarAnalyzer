@@ -1,4 +1,5 @@
-﻿using GrammarAnalyzer.Models;
+﻿using GrammarAnalyzer.Kernel;
+using GrammarAnalyzer.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -43,6 +44,8 @@ namespace GrammarAnalyzer
         public ObservableCollection<TokenViewer> Tokens = new ObservableCollection<TokenViewer>();
         public ObservableCollection<TokenViewer> Nonterminals = new ObservableCollection<TokenViewer>();
 
+        private Grammar Raw = new Grammar();
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             IEnumerable<TokenViewer> tokenViewers = (IEnumerable<TokenViewer>)e.Parameter;
@@ -73,6 +76,30 @@ namespace GrammarAnalyzer
             {
                 Productions = TokenPage.Current.ProductionsLoadByLocal;
             }
+            // reset grammar info
+            Raw = new Grammar();
+        }
+
+        private bool BuildAndTest()
+        {
+            // set grammar info
+            Tokens.ToList().ForEach(t => Raw.InsertToken(new Grammar.Token(
+                t.Type == TokenType.Nonterminal ? Grammar.Token.Type.NONTERMINAL : Grammar.Token.Type.TERMINAL,
+                t.Token
+                )));
+            Productions.ToList().ForEach(p =>
+            {
+                List<Grammar.Token> tokens = new List<Grammar.Token>();
+                p.Candidates.ForEach(t => tokens.Add(new Grammar.Token(
+                    t.Type == TokenType.Nonterminal ? Grammar.Token.Type.NONTERMINAL : Grammar.Token.Type.TERMINAL,
+                    t.Token
+                    )));
+                Raw.InsertProduction(new Grammar.Prodc(new Grammar.Token(
+                    Grammar.Token.Type.NONTERMINAL, p.Nonterminal.Token
+                    ), tokens));
+            });
+            Raw.SetStart(StartNonterminal.First().Token);
+            return Raw.ConnectivityTest();
         }
 
         private void Delete_Click(object sender, RoutedEventArgs e)
@@ -214,7 +241,10 @@ namespace GrammarAnalyzer
             }
             else
             {
-                this.Frame.Navigate(typeof(LRAnalysisPage), Tokens);
+                if (BuildAndTest())
+                {
+                    this.Frame.Navigate(typeof(LRAnalysisPage), Raw);
+                }
             }
         }
 
@@ -229,7 +259,10 @@ namespace GrammarAnalyzer
             }
             else
             {
-                this.Frame.Navigate(typeof(LLAnalysisPage), Tokens);
+                if (BuildAndTest())
+                {
+                    this.Frame.Navigate(typeof(LLAnalysisPage), Raw);
+                }
             }
         }
 
@@ -244,7 +277,10 @@ namespace GrammarAnalyzer
             }
             else
             {
-                this.Frame.Navigate(typeof(SLRAnalysisPage), Tokens);
+                if (BuildAndTest())
+                {
+                    this.Frame.Navigate(typeof(SLRAnalysisPage), Raw);
+                }
             }
         }
 
