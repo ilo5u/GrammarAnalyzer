@@ -231,14 +231,7 @@ namespace GrammarAnalyzer
                     switch (s.Item6._type)
                     {
                         case LRBaseGrammar.Action.Type.SHIFT:
-                            if (s.Item6._prodc._right is null)
-                            {
-                                r.Add("");
-                            }
-                            else
-                            {
-                                r.Add("Shift " + s.Item6._nextState.ToString());
-                            }
+                            r.Add("Shift " + s.Item6._nextState.ToString());
                             break;
                         case LRBaseGrammar.Action.Type.REDUC:
                             if (s.Item6._prodc._right is null)
