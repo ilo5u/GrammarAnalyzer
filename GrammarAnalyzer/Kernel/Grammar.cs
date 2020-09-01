@@ -54,8 +54,8 @@ namespace GrammarAnalyzer.Kernel
             }
         }
 
-        protected static Token Epsilon = new Token(Token.Type.TERMINAL, "ε");
-        protected static Token Dollar = new Token(Token.Type.TERMINAL, "＄");
+        public static Token Epsilon = new Token(Token.Type.TERMINAL, "ε");
+        public static Token Dollar = new Token(Token.Type.TERMINAL, "＄");
 
         public struct Prodc
         {

@@ -28,7 +28,7 @@
                 Click="ToSheet_Click"
                 Margin="10,10,20,10"/>
 
-        <ProgressRing Name="WaitForSLRDeductions"
+        <ProgressRing Name="WaitForSLRDerivs"
                       IsActive="True"
                       Height="100"
                       Width="100"
@@ -37,9 +37,9 @@
 
         <GridView RelativePanel.Below="DFAInfo"
                       Margin="5"
-                      ItemsSource="{x:Bind SLRDeductions}">
+                      ItemsSource="{x:Bind SLRDerivs}">
             <GridView.ItemTemplate>
-                <DataTemplate x:DataType="data:DeductionViewer">
+                <DataTemplate x:DataType="data:DerivViewer">
                     <ScrollViewer VerticalScrollBarVisibility="Visible"
                                   HorizontalScrollBarVisibility="Visible"
                                   Height="240"

@@ -1,4 +1,5 @@
-﻿using GrammarAnalyzer.Models;
+﻿using GrammarAnalyzer.Kernel;
+using GrammarAnalyzer.Models;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using System;
 using System.Collections.Generic;
@@ -35,64 +36,20 @@ namespace GrammarAnalyzer
             this.InitializeComponent();
         }
 
-        private ObservableCollection<TokenViewer> Statement = new ObservableCollection<TokenViewer>();
+        private readonly ObservableCollection<TokenViewer> Statement = new ObservableCollection<TokenViewer>();
         private ObservableCollection<TokenViewer> Tokens = new ObservableCollection<TokenViewer>();
 
-        private Kernel.Analyzer LLAnalyzer = new Kernel.Analyzer();
+        private LL LLAnalyzer = null;
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             Collision = false;
             CollisionInfo.Visibility = Visibility.Collapsed;
 
-            IEnumerable<TokenViewer> tokens = (IEnumerable<TokenViewer>)e.Parameter;
-            foreach (var item in tokens)
+            LLAnalyzer = new LL((Grammar)e.Parameter);
+            Tokens = new ObservableCollection<TokenViewer>();
+            foreach (var item in ProductionPage.Current.Tokens)
             {
-                switch (item.Type)
-                {
-                    case TokenType.Terminal:
-                        Tokens.Add(item);
-                        LLAnalyzer.InsertTerminal(item.Token);
-                        break;
-                    case TokenType.Nonterminal:
-                        Tokens.Add(item);
-                        LLAnalyzer.InsertNonterminal(item.Token);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            foreach (var item in ProductionPage.Current.Productions)
-            {
-                string production = item.Nonterminal.Token + "#";
-                foreach (var token in item.Candidates)
-                {
-                    switch (token.Type)
-                    {
-                        case TokenType.Epsilon:
-                            production += "@";
-                            break;
-                        case TokenType.Terminal:
-                            production += token.Token;
-                            break;
-                        case TokenType.Nonterminal:
-                            production += token.Token;
-                            break;
-                        default:
-                            break;
-                    }
-                    production += '.';
-                }
-                production.Remove(production.LastIndexOf('.'));
-                LLAnalyzer.InsertProduction(production);
-            }
-
-            foreach (var item in tokens)
-            {
-                if (item.IsStart == true)
-                {
-                    LLAnalyzer.SetStartNonterminal(item.Token);
-                }
+                if (item.Type == TokenType.Terminal) Tokens.Add(item);
             }
 
             WaitForSheet.Visibility = Visibility.Visible;
@@ -103,60 +60,68 @@ namespace GrammarAnalyzer
 
         async private void DrawAnalysisSheet()
         {
-            string totals = LLAnalyzer.GetLLAnalysisSheet();
-            string[] rows = totals.Split('\n');
-            foreach (var item in rows)
+            if (!(LLAnalyzer.RunFIS() is null) && !(LLAnalyzer.RunFOS() is null))
             {
-                if (!string.IsNullOrEmpty(item))
+                var lls = LLAnalyzer.BuildAnalysisSheet();
+                // set header
+                List<string> r = new List<string>() { "" };
+                lls.Item2.ToList().ForEach(t => r.Add(t.Value._attr));
+                Rows.Add(r);
+                // set data
+                lls.Item1.ToList().ForEach(t =>
                 {
-                    List<string> vs = new List<string>();
-                    string[] columns = item.Split('\t');
-                    foreach (var elem in columns)
+                    r = new List<string>() { t.Value._attr };
+                    for (int col = 0; col < lls.Item2.Count; ++col)
                     {
-                        if (!string.IsNullOrEmpty(elem))
+                        if (lls.Item3.TryGetValue((t.Key, col), out HashSet<Grammar.Prodc> p))
                         {
-                            if (elem.Contains('·'))
-                            {
-                                Collision = true;
-                            }
-                            vs.Add(elem);
+                            Collision = p.Count != 1;
+                            // use the first as default
+                            Grammar.Prodc cur = p.First();
+                            string str = cur._left._attr + "→";
+                            cur._right.ForEach(e => str += e._attr);
+                            r.Add(str);
+                        }
+                        else
+                        {
+                            r.Add("");
                         }
                     }
-                    Rows.Add(vs);
-                }
-            }
-
-            await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            {
-                int columnIndex = 0;
-                while (columnIndex < Rows[0].Count)
+                    Rows.Add(r);
+                });
+                // show the sheet
+                await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    AnalysisSheet.Columns.Add(new DataGridTextColumn
+                    int columnIndex = 0;
+                    while (columnIndex < Rows[0].Count)
                     {
-                        Header = Rows[0][columnIndex],
-                        Binding = new Binding
+                        AnalysisSheet.Columns.Add(new DataGridTextColumn
                         {
-                            Path = new PropertyPath($"[{columnIndex.ToString()}]")
-                        }
-                    });
-                    columnIndex++;
-                }
+                            Header = Rows[0][columnIndex],
+                            Binding = new Binding
+                            {
+                                Path = new PropertyPath($"[{columnIndex.ToString()}]")
+                            }
+                        });
+                        columnIndex++;
+                    }
 
-                Rows.Remove(Rows.ElementAt(0));
-                AnalysisSheet.ItemsSource = Rows;
-                AnalysisSheet.Visibility = Visibility.Visible;
-                WaitForSheet.Visibility = Visibility.Collapsed;
+                    Rows.Remove(Rows.ElementAt(0));
+                    AnalysisSheet.ItemsSource = Rows;
+                    AnalysisSheet.Visibility = Visibility.Visible;
+                    WaitForSheet.Visibility = Visibility.Collapsed;
 
-                if (Collision == true)
-                {
-                    CollisionInfo.Visibility = Visibility.Visible;
-                    ToAnalysis.IsEnabled = false;
-                }
-                else
-                {
-                    ToAnalysis.IsEnabled = true;
-                }
-            });
+                    if (Collision == true)
+                    {
+                        CollisionInfo.Visibility = Visibility.Visible;
+                        ToAnalysis.IsEnabled = false;
+                    }
+                    else
+                    {
+                        ToAnalysis.IsEnabled = true;
+                    }
+                });
+            }
         }
 
         bool IsOnAnalysis = false;
@@ -166,13 +131,16 @@ namespace GrammarAnalyzer
             {
                 IsOnAnalysis = true;
 
-                string word = " ";
+                List<Grammar.Token> words = new List<Grammar.Token>();
                 foreach (var item in Statement)
                 {
-                    word += item.Token + " ";
+                    words.Add(new Grammar.Token(
+                        item.Type == TokenType.Nonterminal ? Grammar.Token.Type.NONTERMINAL : Grammar.Token.Type.TERMINAL,
+                        item.Token
+                        ));
                 }
 
-                new Task(() => StartAnalysis(word)).Start();
+                new Task(() => StartAnalysis(words)).Start();
                 AnalysisProcedure.Visibility = Visibility.Collapsed;
                 WaitForProcedure.Visibility = Visibility.Visible;
 
@@ -186,29 +154,42 @@ namespace GrammarAnalyzer
             }
         }
 
-        async private void StartAnalysis(string word)
+        async private void StartAnalysis(List<Grammar.Token> words)
         {
             Rows = new List<List<string>>();
 
-            string totals = LLAnalyzer.LLAnalysis(word);
-            string[] rows = totals.Split('\n');
-            foreach (var item in rows)
+            var steps = LLAnalyzer.Analyze(words);
+            // set data
+            steps.ForEach(s =>
             {
-                if (!string.IsNullOrEmpty(item))
+                List<string> r = new List<string>() { s.Item1.ToString() };
+                string str = "";
+                s.Item2.ForEach(t => str += t._attr);
+                r.Add(str);
+
+                str = "";
+                s.Item3.ForEach(t => str += t._attr);
+                r.Add(str);
+
+                if (s.Item4)
                 {
-                    Debug.WriteLine(item);
-                    List<string> vs = new List<string>();
-                    string[] columns = item.Split('\t');
-                    foreach (var elem in columns)
+                    if (s.Item5._right is null)
                     {
-                        if (!string.IsNullOrEmpty(elem))
-                        {
-                            vs.Add(elem);
-                        }
+                        r.Add("");
                     }
-                    Rows.Add(vs);
+                    else
+                    {
+                        string ps = s.Item5._left._attr + "→";
+                        s.Item5._right.ForEach(p => ps += p._attr);
+                        r.Add(ps);
+                    }
                 }
-            }
+                else
+                {
+                    r.Add("Failed");
+                }
+                Rows.Add(r);
+            });
 
             await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
@@ -254,7 +235,6 @@ namespace GrammarAnalyzer
                     }
                 });
                 columnIndex++;
-                Rows.Remove(Rows.ElementAt(0));
 
                 AnalysisProcedure.ItemsSource = Rows;
                 AnalysisProcedure.Visibility = Visibility.Visible;

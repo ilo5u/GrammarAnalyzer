@@ -42,7 +42,7 @@
                               Height="100"
                               Margin="10"
                               IsActive="True" />
-                
+
                 <grid:DataGrid Name="AnalysisSheet"
                                AutoGenerateColumns="false"
                                ItemsSource="{Binding}"
