@@ -161,9 +161,9 @@ namespace GrammarAnalyzer.Kernel
             public DFABase() => _trfs = new Dictionary<(int, Token), int>();
         }
         protected int _dfaStateCount = 0;
-        public ValueTuple<Dictionary<int, Token>, Dictionary<ValueTuple<int, int>, List<Action>>> BuildAnalysisSheet()
+        public ValueTuple<int, Dictionary<int, Token>, Dictionary<ValueTuple<int, int>, List<Action>>> BuildAnalysisSheet()
         {
-            if (_acts.Count == 0 || _goto.Count == 0) return (null, null);
+            if (_acts.Count == 0 || _goto.Count == 0) return (0, null, null);
 
             Dictionary<ValueTuple<int, int>, List<Action>> sheet = new Dictionary<(int, int), List<Action>>();
             List<Token> seq = _terms.ToList();
@@ -195,15 +195,15 @@ namespace GrammarAnalyzer.Kernel
                             sheet.Add((id, col), new List<Action> { new Action(_goto[(id, seq[col])]) });
                             break;
                         default:
-                            return (null, null);
+                            return (_dfaStateCount, null, null);
                     }
                 }
             }
-            return (index, sheet);
+            return (_dfaStateCount, index, sheet);
         }
-        public List<(int, List<int>, List<Token>, bool, Action)> Analyze(List<Token> words)
+        public List<(int, List<int>, List<Token>, List<Token>, bool, Action)> Analyze(List<Token> words)
         {
-            var res = new List<(int, List<int>, List<Token>, bool, Action)>();
+            var res = new List<(int, List<int>, List<Token>, List<Token>, bool, Action)>();
 
             words.Add(Dollar);
             List<int> ss = new List<int>() { 0 };
@@ -237,13 +237,13 @@ namespace GrammarAnalyzer.Kernel
                             ts.Add(words[pos]);
                             ++pos;
 
-                            res.Add((step, cs, ct, true, action));
+                            res.Add((step, cs, ct, rt, true, action));
                             break;
                         case Action.Type.REDUC:
                             if (ss.Count <= action._prodc._right.Count
                                 && action._prodc._right.First() != Epsilon)
                             {
-                                res.Add((step, cs, ct, false, action));
+                                res.Add((step, cs, ct, rt, false, action));
                             }
                             else
                             {
@@ -257,29 +257,29 @@ namespace GrammarAnalyzer.Kernel
                                     ss.Add(ns);
                                     ts.Add(action._prodc._left);
 
-                                    res.Add((step, cs, ct, true, action));
+                                    res.Add((step, cs, ct, rt, true, action));
                                 }
                                 else
                                 {
-                                    res.Add((step, cs, ct, false, action));
+                                    res.Add((step, cs, ct, rt, false, action));
                                 }
                             }
                             break;
                         case Action.Type.ACC:
                             ++pos;
-                            res.Add((step, cs, ct, true, action));
+                            res.Add((step, cs, ct, rt, true, action));
                             break;
                         default:
-                            res.Add((step, cs, ct, false, action));
+                            res.Add((step, cs, ct, rt, false, action));
                             break;
                     }
                 }
                 else
                 {
-                    res.Add((step, cs, ct, false, new Action()));
+                    res.Add((step, cs, ct, rt, false, new Action()));
                 }
 
-                if (!res.Last().Item4) break;
+                if (!res.Last().Item5) break;
             }
             return res;
         }

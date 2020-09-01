@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GrammarAnalyzer.Models
 {
-    class DeductionViewer
+    class DerivViewer
     {
         public int Id { get; set; }
         public string Description { get; set; }

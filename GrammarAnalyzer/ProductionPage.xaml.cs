@@ -83,12 +83,27 @@ namespace GrammarAnalyzer
         private bool BuildAndTest()
         {
             // set grammar info
-            Tokens.ToList().ForEach(t => Raw.InsertToken(new Grammar.Token(
-                t.Type == TokenType.Nonterminal ? Grammar.Token.Type.NONTERMINAL : Grammar.Token.Type.TERMINAL,
-                t.Token
-                )));
+            Tokens.ToList().ForEach(t =>
+            {
+                if (t.Type == TokenType.Epsilon)
+                {
+                }
+                else
+                {
+                    Raw.InsertToken(new Grammar.Token(
+                        t.Type == TokenType.Nonterminal ? Grammar.Token.Type.NONTERMINAL : Grammar.Token.Type.TERMINAL,
+                        t.Token
+                    ));
+                }
+            });
+            bool epsilon = false;
             Productions.ToList().ForEach(p =>
             {
+                if (!epsilon && p.Candidates.Exists(t => t.Type == TokenType.Epsilon))
+                {
+                    Raw.InsertToken(Grammar.Epsilon);
+                    epsilon = true;
+                }
                 List<Grammar.Token> tokens = new List<Grammar.Token>();
                 p.Candidates.ForEach(t => tokens.Add(new Grammar.Token(
                     t.Type == TokenType.Nonterminal ? Grammar.Token.Type.NONTERMINAL : Grammar.Token.Type.TERMINAL,

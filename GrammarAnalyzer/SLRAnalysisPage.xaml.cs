@@ -1,4 +1,5 @@
-﻿using GrammarAnalyzer.Models;
+﻿using GrammarAnalyzer.Kernel;
+using GrammarAnalyzer.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,60 +31,13 @@ namespace GrammarAnalyzer
             this.InitializeComponent();
         }
 
-        private ObservableCollection<DeductionViewer> SLRDeductions = new ObservableCollection<DeductionViewer>();
-        private Kernel.Analyzer SLRAnalyzer = new Kernel.Analyzer();
+        private readonly ObservableCollection<DerivViewer> SLRDerivs = new ObservableCollection<DerivViewer>();
+        private SLR SLRAnalyzer = null;
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            IEnumerable<TokenViewer> tokens = (IEnumerable<TokenViewer>)e.Parameter;
-            foreach (var item in tokens)
-            {
-                switch (item.Type)
-                {
-                    case TokenType.Terminal:
-                        SLRAnalyzer.InsertTerminal(item.Token);
-                        break;
-                    case TokenType.Nonterminal:
-                        SLRAnalyzer.InsertNonterminal(item.Token);
-                        break;
-                    default:
-                        break;
-                }
-            }
+            SLRAnalyzer = new SLR((Grammar)e.Parameter);
 
-            foreach (var item in ProductionPage.Current.Productions)
-            {
-                string production = item.Nonterminal.Token + "#";
-                foreach (var token in item.Candidates)
-                {
-                    switch (token.Type)
-                    {
-                        case TokenType.Epsilon:
-                            production += "@";
-                            break;
-                        case TokenType.Terminal:
-                            production += token.Token;
-                            break;
-                        case TokenType.Nonterminal:
-                            production += token.Token;
-                            break;
-                        default:
-                            break;
-                    }
-                    production += '.';
-                }
-                production.Remove(production.LastIndexOf('.'));
-                SLRAnalyzer.InsertProduction(production);
-            }
-
-            foreach (var item in tokens)
-            {
-                if (item.IsStart == true)
-                {
-                    SLRAnalyzer.SetStartNonterminal(item.Token);
-                }
-            }
-
-            WaitForSLRDeductions.Visibility = Visibility.Visible;
+            WaitForSLRDerivs.Visibility = Visibility.Visible;
             ToSheet.Visibility = Visibility.Collapsed;
 
             new Task(BuildLRAnalysisSheet).Start();
@@ -91,28 +45,26 @@ namespace GrammarAnalyzer
 
         async private void BuildLRAnalysisSheet()
         {
-            string slrDeductions = SLRAnalyzer.GetSLRDeductions();
-            await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            if (!(SLRAnalyzer.RunFIS() is null) && !(SLRAnalyzer.RunFOS() is null))
             {
-                WaitForSLRDeductions.Visibility = Visibility.Collapsed;
-                ToSheet.Visibility = Visibility.Visible;
-
-                string[] anys = slrDeductions.Split('\t');
-                int idCounter = 0;
-                foreach (var item in anys)
+                var derivs = SLRAnalyzer.BuildDerivs();
+                await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    if (!string.IsNullOrEmpty(item))
-                    {
-                        SLRDeductions.Add(new DeductionViewer
-                        {
-                            Id = idCounter,
-                            Description = item
-                        });
-                        idCounter++;
-                    }
-                }
-            });
+                    WaitForSLRDerivs.Visibility = Visibility.Collapsed;
+                    ToSheet.Visibility = Visibility.Visible;
 
+                    derivs.ToList().ForEach(d =>
+                    {
+                        string desc = "";
+                        d.Value.ForEach(s => desc += s + "\n");
+                        SLRDerivs.Add(new DerivViewer
+                        {
+                            Id = d.Key,
+                            Description = desc
+                        });
+                    });
+                });
+            }
         }
 
         private void ToSheet_Click(object sender, RoutedEventArgs e)
