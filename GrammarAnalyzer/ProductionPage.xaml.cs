@@ -35,6 +35,10 @@ namespace GrammarAnalyzer
             this.InitializeComponent();
             Current = this;
         }
+        /// <summary>
+        /// actually, this is not a good design to use the instance
+        /// across different class objects
+        /// </summary>
         public static ProductionPage Current;
 
         public ObservableCollection<TokenViewer> StartNonterminal = new ObservableCollection<TokenViewer>();
@@ -45,9 +49,21 @@ namespace GrammarAnalyzer
         public ObservableCollection<TokenViewer> Nonterminals = new ObservableCollection<TokenViewer>();
 
         private Grammar Raw = new Grammar();
-
+        /// <summary>
+        /// reset page resources
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            // reset all views
+            StartNonterminal = new ObservableCollection<TokenViewer>();
+            Candidate = new ObservableCollection<TokenViewer>();
+            Productions = new ObservableCollection<ProductionViewer>();
+            Tokens = new ObservableCollection<TokenViewer>();
+            Nonterminals = new ObservableCollection<TokenViewer>();
+            // reset grammar info
+            Raw = new Grammar();
+            // set views
             IEnumerable<TokenViewer> tokenViewers = (IEnumerable<TokenViewer>)e.Parameter;
             foreach (var item in tokenViewers)
             {
@@ -76,10 +92,12 @@ namespace GrammarAnalyzer
             {
                 Productions = TokenPage.Current.ProductionsLoadByLocal;
             }
-            // reset grammar info
-            Raw = new Grammar();
         }
-
+        /// <summary>
+        /// build the raw grammar instance,
+        /// and test the connectivity, or legality
+        /// </summary>
+        /// <returns></returns>
         private bool BuildAndTest()
         {
             // set grammar info
@@ -87,6 +105,8 @@ namespace GrammarAnalyzer
             {
                 if (t.Type == TokenType.Epsilon)
                 {
+                    // do not add epsilon causing this token
+                    // is added default when generate productions
                 }
                 else
                 {
@@ -99,6 +119,9 @@ namespace GrammarAnalyzer
             bool epsilon = false;
             Productions.ToList().ForEach(p =>
             {
+                // but if epsilon existed in productions,
+                // the epsilon token is needed to add
+                // (casue the difference in backend and frontend)
                 if (!epsilon && p.Candidates.Exists(t => t.Type == TokenType.Epsilon))
                 {
                     Raw.InsertToken(Grammar.Epsilon);
@@ -116,21 +139,33 @@ namespace GrammarAnalyzer
             Raw.SetStart(StartNonterminal.First().Token);
             return Raw.ConnectivityTest();
         }
-
+        /// <summary>
+        /// delete the selected token in the right part
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
             if (ToDeleteToken != null)
                 Candidate.Remove(ToDeleteToken);
             ToDeleteToken = null;
         }
-
+        /// <summary>
+        /// select one token
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NonterminalViewer_Click(object sender, ItemClickEventArgs e)
         {
             TokenViewer tokenViewer = (TokenViewer)e.ClickedItem;
             StartNonterminal.Clear();
             StartNonterminal.Add(tokenViewer);
         }
-
+        /// <summary>
+        /// select and add one token into the right part of current production
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TerminalViewer_Click(object sender, ItemClickEventArgs e)
         {
             TokenViewer tokenViewer = (TokenViewer)e.ClickedItem;
@@ -139,6 +174,8 @@ namespace GrammarAnalyzer
                 try
                 {
                     Candidate.First(elem => elem.Type == TokenType.Epsilon);
+                    // if epsilon token already added, the other tokens including epsilon
+                    // can not be chosen to add
                 }
                 catch (Exception)
                 {
@@ -149,8 +186,10 @@ namespace GrammarAnalyzer
                     });
                 }
             }
-            else if (Candidate.Count == 0)
+            else
             {
+                // the right part must be empty to add epsilon token
+                Candidate.Clear();
                 Candidate.Add(new TokenViewer
                 {
                     Token = tokenViewer.Token,
@@ -158,7 +197,11 @@ namespace GrammarAnalyzer
                 });
             }
         }
-
+        /// <summary>
+        /// show the delete choic in flyout
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Delete_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (sender is FrameworkElement delete)
@@ -166,18 +209,30 @@ namespace GrammarAnalyzer
                 FlyoutBase.ShowAttachedFlyout(delete);
             }
         }
-
+        /// <summary>
+        /// record the selected token at the right part in the current production
+        /// </summary>
         private TokenViewer ToDeleteToken = null;
+        /// <summary>
+        /// select one token at the right part
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteViewer_Click(object sender, ItemClickEventArgs e)
         {
             ToDeleteToken = (TokenViewer)e.ClickedItem;
         }
-
+        /// <summary>
+        /// take the current prodution input
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Create_Click(object sender, RoutedEventArgs e)
         {
             if (StartNonterminal.Count != 0
                 && Candidate.Count != 0)
             {
+                // check duplicatied produtions
                 bool isExised = false;
                 foreach (var item in Productions)
                 {
@@ -223,7 +278,11 @@ namespace GrammarAnalyzer
                 }
             }
         }
-
+        /// <summary>
+        /// show the delete choice in flyout
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteProduction_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (sender is FrameworkElement delete)
@@ -231,74 +290,156 @@ namespace GrammarAnalyzer
                 FlyoutBase.ShowAttachedFlyout(delete);
             }
         }
-
+        /// <summary>
+        /// record selected production temporally
+        /// </summary>
         private ProductionViewer ToDeleteProduction = null;
+        /// <summary>
+        /// delete the selected production
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteProduction_Click(object sender, RoutedEventArgs e)
         {
             if (ToDeleteProduction != null)
                 Productions.Remove(ToDeleteProduction);
             ToDeleteProduction = null;
         }
-
+        /// <summary>
+        /// select one production
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteProductionViewer_Click(object sender, ItemClickEventArgs e)
         {
             ToDeleteProduction = (ProductionViewer)e.ClickedItem;
         }
-
+        /// <summary>
+        /// implement LR(1) analysis
+        /// </summary>
+        /// <param name="sender">button</param>
+        /// <param name="e">flyout</param>
         private void ToLR_Click(object sender, RoutedEventArgs e)
         {
             if (Productions.Count == 0)
             {
                 if (sender is FrameworkElement empty)
                 {
+                    Empty.Visibility = Visibility.Visible;
+                    Unusable.Visibility = Visibility.Collapsed;
                     FlyoutBase.ShowAttachedFlyout(empty);
                 }
             }
             else
             {
+                /// test unusable tokens. e.g.
+                /// grammar G as:
+                /// A -> a
+                /// B -> b
+                /// thus, considering G as a undirected graph G',
+                /// G' is divided into two parts with A or B unusable
                 if (BuildAndTest())
                 {
                     this.Frame.Navigate(typeof(LRAnalysisPage), Raw);
                 }
+                else
+                {
+                    /// check productions again
+                    if (sender is FrameworkElement unusable)
+                    {
+                        Empty.Visibility = Visibility.Collapsed;
+                        Unusable.Visibility = Visibility.Visible;
+                        FlyoutBase.ShowAttachedFlyout(unusable);
+                    }
+                }
             }
         }
-
+        /// <summary>
+        /// implement LL(1) analysis
+        /// </summary>
+        /// <param name="sender">button</param>
+        /// <param name="e">flyout</param>
         private void ToLL_Click(object sender, RoutedEventArgs e)
         {
             if (Productions.Count == 0)
             {
                 if (sender is FrameworkElement empty)
                 {
+                    Empty.Visibility = Visibility.Visible;
+                    Unusable.Visibility = Visibility.Collapsed;
                     FlyoutBase.ShowAttachedFlyout(empty);
                 }
             }
             else
             {
+                /// test unusable tokens. e.g.
+                /// grammar G as:
+                /// A -> a
+                /// B -> b
+                /// thus, considering G as a undirected graph G',
+                /// G' is divided into two parts with A or B unusable
                 if (BuildAndTest())
                 {
                     this.Frame.Navigate(typeof(LLAnalysisPage), Raw);
                 }
+                else
+                {
+                    /// check productions again
+                    if (sender is FrameworkElement unusable)
+                    {
+                        Empty.Visibility = Visibility.Collapsed;
+                        Unusable.Visibility = Visibility.Visible;
+                        FlyoutBase.ShowAttachedFlyout(unusable);
+                    }
+                }
             }
         }
-
+        /// <summary>
+        /// implement SLR(1) analysis
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ToSLR_Click(object sender, RoutedEventArgs e)
         {
             if (Productions.Count == 0)
             {
                 if (sender is FrameworkElement empty)
                 {
+                    Empty.Visibility = Visibility.Visible;
+                    Unusable.Visibility = Visibility.Collapsed;
                     FlyoutBase.ShowAttachedFlyout(empty);
                 }
             }
             else
             {
+                /// test unusable tokens. e.g.
+                /// grammar G as:
+                /// A -> a
+                /// B -> b
+                /// thus, considering G as a undirected graph G',
+                /// G' is divided into two parts with A or B unusable
                 if (BuildAndTest())
                 {
                     this.Frame.Navigate(typeof(SLRAnalysisPage), Raw);
                 }
+                else
+                {
+                    /// check productions again
+                    if (sender is FrameworkElement unusable)
+                    {
+                        Empty.Visibility = Visibility.Collapsed;
+                        Unusable.Visibility = Visibility.Visible;
+                        FlyoutBase.ShowAttachedFlyout(unusable);
+                    }
+                }
             }
         }
-
+        /// <summary>
+        /// store to local disk, including
+        /// nonterminals, terminals, the starter and productions
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         async private void Save_Click(object sender, RoutedEventArgs e)
         {
             if (Productions.Count == 0)
@@ -326,13 +467,19 @@ namespace GrammarAnalyzer
                 }
             }
         }
-
+        /// <summary>
+        /// async storing task
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="tokens"></param>
+        /// <param name="productions"></param>
         async private void SaveGrammarInLocal(StorageFile file, List<TokenViewer> tokens, List<ProductionViewer> productions)
         {
             string toSave = "";
             // Prevent updates to the remote version of the file until we finish making changes and call CompleteUpdatesAsync.
             CachedFileManager.DeferUpdates(file);
             // write to file
+            // tokens including nonterminals and terminals per row
             foreach (var item in tokens)
             {
                 switch (item.Type)
@@ -357,6 +504,7 @@ namespace GrammarAnalyzer
                 }
             }
             toSave = toSave.Remove(toSave.LastIndexOf(' ')) + '\n';
+            // productions
             foreach (var item in productions)
             {
                 string production = item.Nonterminal.Token + '→';
@@ -380,6 +528,7 @@ namespace GrammarAnalyzer
                 }
                 toSave += production.Remove(production.LastIndexOf(' ')) + '\n';
             }
+            // the starter
             foreach (var item in tokens)
             {
                 if (item.IsStart == true)

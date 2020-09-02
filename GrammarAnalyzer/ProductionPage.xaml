@@ -42,8 +42,12 @@
                     Click="ToLR_Click">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
-                        <TextBlock Text="产生式不能为空"
+                        <RelativePanel>
+                            <TextBlock x:Name="Empty" Text="产生式不能为空"
                                    Foreground="DarkRed" />
+                            <TextBlock x:Name="Unusable" Text="产生式表述不完整\n存在无用符号"
+                                   Foreground="DarkRed" />
+                        </RelativePanel>
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </Button>
