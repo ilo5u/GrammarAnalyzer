@@ -8,11 +8,91 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Page.Resources>
+        <Style TargetType="TextBlock" x:Key="HeaderStyle">
+            <Setter Property="Margin" Value="20"/>
+            <Setter Property="FontSize" Value="40"/>
+            <Setter Property="FontWeight" Value="Light"/>
+        </Style>
+    </Page.Resources>
+
+    <!--<Grid>
         <RelativePanel Margin="20">
             <HyperlinkButton NavigateUri="https://github.com/ilo5u/GrammarAnalyzer">
                 <TextBlock Text="https://github.com/ilo5u/GrammarAnalyzer" FontSize="24"></TextBlock>
             </HyperlinkButton>
         </RelativePanel>
-    </Grid>
+    </Grid>-->
+    <ScrollViewer VerticalScrollBarVisibility="Visible">
+        <StackPanel>
+            <TextBlock Style="{StaticResource HeaderStyle}">Preference</TextBlock>
+            <RichTextBlock Name="Preference" Margin="20,0,20,0">
+                <Paragraph FontSize="16">
+                    In
+                    <Run FontStyle="Italic">Principle of Compiling</Run> class, 
+                students need to master how to build an
+                    <Run FontWeight="Bold">analysis sheet</Run> and implement the
+                    <Run FontWeight="Bold">analysis process</Run> for a given grammar. 
+                However, these tasks are always clumsy with the fixed and rigid methods. 
+                Thus, this app will help you to complete the mentioned steps automatically, 
+                including sheets for LL(1), SLR(1), LR(1) grammar and DFA
+                    <Run FontStyle="Italic">(Dererministic Finite Automaton)</Run> for LR-grammar, 
+                only required for importing the components
+                    <Run FontStyle="Italic">(nonterminals, terminals, the starter and productions)</Run> manually.
+                </Paragraph>
+            </RichTextBlock>
+            <TextBlock Style="{StaticResource HeaderStyle}">Guides</TextBlock>
+            <RichTextBlock Name="Guides" Margin="20,0,20,0">
+                <Paragraph FontSize="16">
+                    Let's learn how to use this app step by step.
+                </Paragraph>
+                <Paragraph FontSize="16">
+                    <Run FontWeight="Medium" FontSize="32">Home</Run> is the first page you can see when run this app.
+                </Paragraph>
+                <!--<Paragraph>
+                    <InlineUIContainer>
+                        <Image Source="Assets/Help/Home.png" Width="800"/>
+                    </InlineUIContainer>
+                </Paragraph>-->
+                <Paragraph FontSize="16">
+                    The right top icon 
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE700;"/>
+                    </InlineUIContainer> 
+                    is the menu button. When you clicked it, the detailed meanings of 
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE10F;"/>
+                    </InlineUIContainer> 
+                    and
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE11B;"/>
+                    </InlineUIContainer> 
+                    will appear. The front one is
+                    <Run FontStyle="Italic">home</Run> button, and the latter one is
+                    <Run FontStyle="Italic">help</Run> button. In the home page, we can import the specific grammar
+                    manually or loading from disk with click of
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF56E;"></FontIcon>
+                    </InlineUIContainer> which stored before. The manually importing method as below,
+                </Paragraph>
+                <Paragraph FontSize="16" Margin="0,5,0,0">
+                    <Run FontSize="24" FontStyle="Italic">1.</Run> The left part of home page records nonterminals in the grammar, and the right records terminals. It is noteworthy that characters in nonterminals/terminals should not contain "ε" or only blank space, cause "ε" represents empty
+                    <Run FontStyle="Italic">(more detailed please refer to Principle of Compiling)</Run> .
+                </Paragraph>
+                <Paragraph FontSize="16" Margin="0,5,0,0">
+                    <Run FontSize="24" FontStyle="Italic">2.</Run> Every correct grammar takes one special nonterminal as the starter. To set the starter, you can click one nonterminal and set it as starter like this,
+                    <InlineUIContainer>
+                        <Image Source="Assets/Help/setstarter.png" Width="120" UseLayoutRounding="True"></Image>
+                    </InlineUIContainer>. 
+                    You can select the bottom choice to set the starter, and the top to delete the selected nonterminal. If the starter set correctly, the question mark would go red. Like nonterminals, the way to import terminals is the same.  
+                </Paragraph>
+                <Paragraph FontSize="16" Margin="0,5,0,0">
+                    <Run FontSize="24" FontStyle="Italic">3.</Run> After importing nonterminals/terminals, click
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;"/>
+                    </InlineUIContainer> to import productions.
+                </Paragraph>
+            </RichTextBlock>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

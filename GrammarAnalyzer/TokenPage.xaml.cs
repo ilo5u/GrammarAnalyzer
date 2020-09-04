@@ -58,6 +58,8 @@ namespace GrammarAnalyzer
             if (e.Key == Windows.System.VirtualKey.Enter
                 && !string.IsNullOrEmpty(nonterminal.Text))
             {
+                // ε represents epsilon token, but the user does not
+                // need to add it by himself
                 if (nonterminal.Text.Contains('ε'))
                 {
                     nonterminal.Text = "";
