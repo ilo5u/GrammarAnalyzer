@@ -92,6 +92,10 @@
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;"/>
                     </InlineUIContainer> to import productions.
                 </Paragraph>
+                <Paragraph FontSize="16">
+                    <Run FontSize="32" FontWeight="Medium">Production</Run> page accepts expressions like
+                    <Run FontStyle="Italic">S→α</Run> where α can be nonterminal or terminal or their combination and S represents a nonterminal. This page consists of four subpages, the top viewer showing the recorded productions, and the middle displaying the current production, the bottom divided into two parts with the left including all nonterminals and the right including terminals.
+                </Paragraph>
             </RichTextBlock>
         </StackPanel>
     </ScrollViewer>
