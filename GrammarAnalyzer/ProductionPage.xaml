@@ -45,7 +45,7 @@
                         <RelativePanel>
                             <TextBlock x:Name="LREmpty" Text="Derivations Empty"
                                    Foreground="DarkRed" />
-                            <TextBlock x:Name="LRUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.4 for Reasons"
+                            <TextBlock x:Name="LRUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.3 for Reasons"
                                    Foreground="DarkRed" />
                         </RelativePanel>
                     </Flyout>
@@ -72,7 +72,7 @@
                         <RelativePanel>
                             <TextBlock x:Name="SLREmpty" Text="Derivations Empty"
                                    Foreground="DarkRed" />
-                            <TextBlock x:Name="SLRUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.4 for Reasons"
+                            <TextBlock x:Name="SLRUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.3 for Reasons"
                                    Foreground="DarkRed" />
                         </RelativePanel>
                     </Flyout>
@@ -100,7 +100,7 @@
                         <RelativePanel>
                             <TextBlock x:Name="LLEmpty" Text="Derivations Empty"
                                    Foreground="DarkRed" />
-                            <TextBlock x:Name="LLUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.4 for Reasons"
+                            <TextBlock x:Name="LLUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.3 for Reasons"
                                    Foreground="DarkRed" />
                         </RelativePanel>
                     </Flyout>
