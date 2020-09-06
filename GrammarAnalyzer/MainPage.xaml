@@ -52,7 +52,7 @@
                         <StackPanel Orientation="Horizontal">
                             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE10F;"
                                       Margin="0,0,20,0"/>
-                            <TextBlock Text="主页" />
+                            <TextBlock Text="Home" />
                         </StackPanel>
                     </ListBoxItem>
 
@@ -60,7 +60,7 @@
                         <StackPanel Orientation="Horizontal">
                             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE11B;"
                                       Margin="0,0,20,0"/>
-                            <TextBlock Text="帮助" />
+                            <TextBlock Text="Help" />
                         </StackPanel>
                     </ListBoxItem>
                 </ListBox>

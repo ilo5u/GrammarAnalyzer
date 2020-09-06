@@ -325,8 +325,8 @@ namespace GrammarAnalyzer
             {
                 if (sender is FrameworkElement empty)
                 {
-                    Empty.Visibility = Visibility.Visible;
-                    Unusable.Visibility = Visibility.Collapsed;
+                    LREmpty.Visibility = Visibility.Visible;
+                    LRUnusable.Visibility = Visibility.Collapsed;
                     FlyoutBase.ShowAttachedFlyout(empty);
                 }
             }
@@ -347,8 +347,8 @@ namespace GrammarAnalyzer
                     /// check productions again
                     if (sender is FrameworkElement unusable)
                     {
-                        Empty.Visibility = Visibility.Collapsed;
-                        Unusable.Visibility = Visibility.Visible;
+                        LREmpty.Visibility = Visibility.Collapsed;
+                        LRUnusable.Visibility = Visibility.Visible;
                         FlyoutBase.ShowAttachedFlyout(unusable);
                     }
                 }
@@ -365,8 +365,8 @@ namespace GrammarAnalyzer
             {
                 if (sender is FrameworkElement empty)
                 {
-                    Empty.Visibility = Visibility.Visible;
-                    Unusable.Visibility = Visibility.Collapsed;
+                    LLEmpty.Visibility = Visibility.Visible;
+                    LLUnusable.Visibility = Visibility.Collapsed;
                     FlyoutBase.ShowAttachedFlyout(empty);
                 }
             }
@@ -387,8 +387,8 @@ namespace GrammarAnalyzer
                     /// check productions again
                     if (sender is FrameworkElement unusable)
                     {
-                        Empty.Visibility = Visibility.Collapsed;
-                        Unusable.Visibility = Visibility.Visible;
+                        LLEmpty.Visibility = Visibility.Collapsed;
+                        LLUnusable.Visibility = Visibility.Visible;
                         FlyoutBase.ShowAttachedFlyout(unusable);
                     }
                 }
@@ -405,8 +405,8 @@ namespace GrammarAnalyzer
             {
                 if (sender is FrameworkElement empty)
                 {
-                    Empty.Visibility = Visibility.Visible;
-                    Unusable.Visibility = Visibility.Collapsed;
+                    SLREmpty.Visibility = Visibility.Visible;
+                    SLRUnusable.Visibility = Visibility.Collapsed;
                     FlyoutBase.ShowAttachedFlyout(empty);
                 }
             }
@@ -427,8 +427,8 @@ namespace GrammarAnalyzer
                     /// check productions again
                     if (sender is FrameworkElement unusable)
                     {
-                        Empty.Visibility = Visibility.Collapsed;
-                        Unusable.Visibility = Visibility.Visible;
+                        SLREmpty.Visibility = Visibility.Collapsed;
+                        SLRUnusable.Visibility = Visibility.Visible;
                         FlyoutBase.ShowAttachedFlyout(unusable);
                     }
                 }

@@ -26,7 +26,7 @@
                        BorderBrush="AliceBlue"
                        BorderThickness="2">
             <TextBlock Name="ProductionInfo" 
-                       Text="产生式"
+                       Text="Derivations"
                        Style="{ThemeResource TitleTextBlockStyle}"
                        Margin="10"/>
 
@@ -43,9 +43,9 @@
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
                         <RelativePanel>
-                            <TextBlock x:Name="Empty" Text="产生式不能为空"
+                            <TextBlock x:Name="LREmpty" Text="Derivations Empty"
                                    Foreground="DarkRed" />
-                            <TextBlock x:Name="Unusable" Text="产生式表述不完整\n存在无用符号"
+                            <TextBlock x:Name="LRUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.4 for Reasons"
                                    Foreground="DarkRed" />
                         </RelativePanel>
                     </Flyout>
@@ -69,8 +69,12 @@
                     Click="ToSLR_Click">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
-                        <TextBlock Text="产生式不能为空"
+                        <RelativePanel>
+                            <TextBlock x:Name="SLREmpty" Text="Derivations Empty"
                                    Foreground="DarkRed" />
+                            <TextBlock x:Name="SLRUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.4 for Reasons"
+                                   Foreground="DarkRed" />
+                        </RelativePanel>
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </Button>
@@ -93,8 +97,12 @@
                     Click="ToLL_Click">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
-                        <TextBlock Text="产生式不能为空"
+                        <RelativePanel>
+                            <TextBlock x:Name="LLEmpty" Text="Derivations Empty"
                                    Foreground="DarkRed" />
+                            <TextBlock x:Name="LLUnusable" Text="Incomplete Derivations&#x0a;Useless Tokens Existed&#x0a;Refer to Help.Guides.Derivation.4 for Reasons"
+                                   Foreground="DarkRed" />
+                        </RelativePanel>
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </Button>
@@ -117,11 +125,11 @@
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
                         <TextBlock Foreground="DarkRed"
-                                   Text="产生式不能为空" />
+                                   Text="Derivations Empty" />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </Button>
-            <TextBlock Text="保存"
+            <TextBlock Text="Save"
                        FontSize="18"
                        Margin="10,0,20,0"
                        RelativePanel.Below="ToSave"
@@ -142,7 +150,7 @@
                                         Tapped="DeleteProduction_Tapped">
                                 <FlyoutBase.AttachedFlyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Text="删除" Click="DeleteProduction_Click" />
+                                        <MenuFlyoutItem Text="Delete" Click="DeleteProduction_Click" />
                                     </MenuFlyout>
                                 </FlyoutBase.AttachedFlyout>
                                 <TextBlock Text="{x:Bind Nonterminal,Converter={StaticResource NConverter}}"
@@ -191,7 +199,7 @@
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
                         <TextBlock Foreground="DarkRed"
-                                   Text="左部或右部不能为空" />
+                                   Text="Right Candidate Empty in Current Derivation" />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </Button>
@@ -213,7 +221,7 @@
                                        Width="50">
                                 <FlyoutBase.AttachedFlyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Text="删除" 
+                                        <MenuFlyoutItem Text="Delete" 
                                                         Click="Delete_Click" />
                                     </MenuFlyout>
                                 </FlyoutBase.AttachedFlyout>
@@ -235,7 +243,7 @@
                            BorderThickness="2"
                            BorderBrush="AliceBlue">
                 <TextBlock Style="{ThemeResource TitleTextBlockStyle}" 
-                           Text="非终结符"
+                           Text="Nonterminators"
                            Margin="10"
                            Name="NonterminalInfo"/>
                 <GridView RelativePanel.Below="NonterminalInfo"
@@ -259,7 +267,7 @@
                            BorderThickness="2"
                            BorderBrush="AliceBlue">
                 <TextBlock Style="{ThemeResource TitleTextBlockStyle}" 
-                           Text="记号" 
+                           Text="Tokens" 
                            Name="TokenInfo"
                            Margin="10"/>
                 <GridView RelativePanel.Below="TokenInfo"

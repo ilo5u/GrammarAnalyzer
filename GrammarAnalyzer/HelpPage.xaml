@@ -25,8 +25,8 @@
     </Grid>-->
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel>
-            <TextBlock Style="{StaticResource HeaderStyle}">Preference</TextBlock>
-            <RichTextBlock Name="Preference" Margin="20,0,20,0">
+            <TextBlock Style="{StaticResource HeaderStyle}">Preface</TextBlock>
+            <RichTextBlock Name="Preface" Margin="20,0,20,0">
                 <Paragraph FontSize="16">
                     In
                     <Run FontStyle="Italic">Principle of Compiling</Run> class, 
@@ -38,7 +38,7 @@
                 including sheets for LL(1), SLR(1), LR(1) grammar and DFA
                     <Run FontStyle="Italic">(Dererministic Finite Automaton)</Run> for LR-grammar, 
                 only required for importing the components
-                    <Run FontStyle="Italic">(nonterminals, terminals, the starter and productions)</Run> manually.
+                    <Run FontStyle="Italic">(nonterminators, terminators, the starter and derivations)</Run> manually.
                 </Paragraph>
             </RichTextBlock>
             <TextBlock Style="{StaticResource HeaderStyle}">Guides</TextBlock>
@@ -76,56 +76,92 @@
                     </InlineUIContainer> which stored before. The manually importing method as below,
                 </Paragraph>
                 <Paragraph FontSize="16" Margin="0,5,0,0">
-                    <Run FontSize="24" FontStyle="Italic">1.</Run> The left part of home page records nonterminals in the grammar, and the right records terminals. It is noteworthy that characters in nonterminals/terminals should not contain "ε" or only blank space, cause "ε" represents empty
+                    <Run FontSize="24" FontStyle="Italic">1.</Run> The left part of home page records nonterminators in the grammar, and the right records terminators. It is noteworthy that characters in nonterminators/terminators should not contain "ε" or only blank space, cause "ε" represents empty
                     <Run FontStyle="Italic">(more detailed please refer to Principle of Compiling)</Run> .
                 </Paragraph>
                 <Paragraph FontSize="16" Margin="0,5,0,0">
-                    <Run FontSize="24" FontStyle="Italic">2.</Run> Every correct grammar takes one special nonterminal as the starter. To set the starter, you can click one nonterminal and set it as starter like this,
+                    <Run FontSize="24" FontStyle="Italic">2.</Run> Every correct grammar takes one special nonterminator as the starter. To set the starter, you can click one nonterminator and set it as starter like this,
                     <InlineUIContainer>
                         <Image Source="Assets/Help/setstarter.png" Width="120" UseLayoutRounding="True"></Image>
                     </InlineUIContainer>. 
-                    You can select the bottom choice to set the starter, and the top to delete the selected nonterminal. If the starter set correctly, the question mark would go red. Like nonterminals, the way to import terminals is the same.  
+                    You can select the bottom choice to set the starter, and the top to delete the selected nonterminator. If the starter set correctly, the question mark would go red. Like nonterminators, the way to import terminators is the same.  
                 </Paragraph>
                 <Paragraph FontSize="16" Margin="0,5,0,0">
-                    <Run FontSize="24" FontStyle="Italic">3.</Run> After importing nonterminals/terminals, click
+                    <Run FontSize="24" FontStyle="Italic">3.</Run> After importing nonterminators/terminators, click
                     <InlineUIContainer>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;"/>
-                    </InlineUIContainer> to import productions.
+                    </InlineUIContainer> to import derivations.
                 </Paragraph>
                 <Paragraph FontSize="16">
-                    <Run FontSize="32" FontWeight="Medium">Production</Run> page accepts expressions like
-                    <Run FontStyle="Italic">S→α</Run> where α can be nonterminal or terminal or their combination and S represents a nonterminal. This page consists of four subpages, the top viewer showing the recorded productions, and the middle displaying the current production, the bottom divided into two parts with the left including all nonterminals and the right including nonterminals/terminals within ε.
+                    <Run FontSize="32" FontWeight="Medium">Derivation</Run> page accepts expressions like
+                    <Run FontStyle="Italic">S→α</Run> where α can be nonterminator or terminator or their combination and S represents a nonterminator. This page consists of four subpages, the top viewer showing the recorded derivations, and the middle displaying the current derivation, the bottom divided into two parts with the left including all nonterminators and the right including nonterminators/terminators within ε.
                 </Paragraph>
                 <Paragraph FontSize="16" Margin="0,5,0,0">
-                    <Run FontSize="24" FontStyle="Italic">1.</Run> Click left nonterminal-viewer to change the left starter, and right nonterminal/terminal-viewer to add them in order building the right
-                    <Run FontStyle="Italic">candidate</Run>. Notice that if the candidate contains ε, no more terminals could be added into the candidate.
+                    <Run FontSize="24" FontStyle="Italic">1.</Run> Click left nonterminator-viewer to change the left starter, and right nonterminator/terminator-viewer to add them in order building the right
+                    <Run FontStyle="Italic">candidate</Run>. Notice that if the candidate contains ε, no more terminators could be added into the candidate.
                 </Paragraph>
                 <Paragraph FontSize="16" Margin="0,5,0,0">
-                    <Run FontSize="24" FontStyle="Italic">2.</Run> When the current production is ready, click
+                    <Run FontSize="24" FontStyle="Italic">2.</Run> When the current derivation is ready, click
                     <InlineUIContainer>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;"/>
-                    </InlineUIContainer> in the middle to add it into records. If you add a wrong production into records or
-                    <Run FontStyle="Italic">token</Run> (nonterminal or terminal or ε) into candidate, click it and select delete option.
+                    </InlineUIContainer> in the middle to add it into records. If you add a wrong derivation into records or
+                    <Run FontStyle="Italic">token</Run> (nonterminator or terminator or ε) into candidate, click it and select delete option.
                 </Paragraph>
                 <Paragraph FontSize="16" Margin="0,5,0,0">
-                    <Run FontSize="24" FontStyle="Italic">3.</Run> When all productions are prepared, click
+                    <Run FontSize="24" FontStyle="Italic">3.</Run> When all derivations are prepared, click
                     <InlineUIContainer>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;"/>
                     </InlineUIContainer>
-                    <Run FontStyle="Italic">LL(1), SLR(1), LR(1)</Run> to build analysis sheet in corresponding syntax. Notice that productions should not contains useless tokens. For example, considering productions as
+                    <Run FontStyle="Italic">LL(1), SLR(1), LR(1)</Run> to build analysis sheet in corresponding syntax. Notice that derivations should not contains useless tokens. For example, considering derivations as
                     <Run FontStyle="Italic">A→a B→b</Run> , where
                     <Run FontStyle="Italic">A</Run> and
-                    <Run FontStyle="Italic">B</Run> are nonterminals with
+                    <Run FontStyle="Italic">B</Run> are nonterminators with
                     <Run FontStyle="Italic">a</Run> and
-                    <Run FontStyle="Italic">b</Run> as terminals. Obviously,
+                    <Run FontStyle="Italic">b</Run> as terminators. Obviously,
                     <Run FontStyle="Italic">A</Run> can not reach
-                    <Run FontStyle="Italic">b</Run> if we consider production representations as a undirected graph. Thus, we need to make sure that the production representations equal to its corresponding connected undirected graph.
+                    <Run FontStyle="Italic">b</Run> if we consider derivation representations as a undirected graph. Thus, we need to make sure that the derivation representations equal to its corresponding connected undirected graph.
                 </Paragraph>
                 <Paragraph FontSize="16" Margin="0,5,0,0">
                     <Run FontSize="24" FontStyle="Italic">4.</Run> Moreover, click
                     <InlineUIContainer>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE118;"/>
                     </InlineUIContainer> to store current grammar locally when needed.
+                </Paragraph>
+                <Paragraph FontSize="16">
+                    <Run FontSize="32" FontWeight="Medium">Analysis</Run> page contains one analysis sheet
+                    <Run FontStyle="Italic">(LL or LR syntax)</Run> at the top, and the middle accepts
+                    <Run FontStyle="Italic">sentence</Run> to generate the analysis process. Click terminators listed in the middle to build the sentence, and click 
+                    <InlineUIContainer>
+                        <FontIcon Glyph="&#xE094;" FontFamily="Segoe MDL2 Assets"/>
+                    </InlineUIContainer> to start the process. When process completed, the outcome would appear at the bottom of this page, including analysis steps in table. As for terms like
+                    <Run FontStyle="Italic">sentence, token or candidate</Run>, please refer to the basic information in
+                    <Run FontStyle="Italic">Principle of Compiling</Run> class.
+                </Paragraph>
+                <Paragraph FontSize="16">
+                    <Run FontSize="32" FontWeight="Medium">DFA</Run> page would only be used when generate
+                    <Run FontStyle="Italic">SLR(1) and LR(1)</Run> analysis, showing all states to build the analysis sheet. Howerver, this page needs a more detailed and visual method to depict states and the transferring relations between states, and it will be coming soon. 
+                </Paragraph>
+            </RichTextBlock>
+            <TextBlock Style="{StaticResource HeaderStyle}">Example</TextBlock>
+            <RichTextBlock Name="Example" Margin="20,0,20,0">
+                <Paragraph FontSize="20">
+                    <Run FontSize="24" FontStyle="Italic" FontWeight="Medium">Nonterminators</Run>  T  F  E
+                </Paragraph>
+                <Paragraph FontSize="20">
+                    <Run FontSize="24" FontStyle="Italic" FontWeight="Medium">Terminators</Run>  +  *  (  )  -  id
+                </Paragraph>
+                <Paragraph FontSize="20">
+                    <Run FontSize="24" FontStyle="Italic" FontWeight="Medium">Starter</Run>  E
+                </Paragraph>
+                <Paragraph FontSize="20">
+                    <Run FontSize="24" FontStyle="Italic" FontWeight="Medium">Derivations</Run> E→E+T  E→T  T→T*F  T→F  F→(E)  F→-F  F→id
+                </Paragraph>
+            </RichTextBlock>
+            <TextBlock Style="{StaticResource HeaderStyle}">Appendix</TextBlock>
+            <RichTextBlock Name="Appendix" Margin="20,0,20,0">
+                <Paragraph FontSize="24">
+                    More help info please refer to
+                    <Hyperlink NavigateUri="https://github.com/ilo5u/GrammarAnalyzer">github:ilo5u</Hyperlink>.
                 </Paragraph>
             </RichTextBlock>
         </StackPanel>

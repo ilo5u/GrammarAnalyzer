@@ -24,7 +24,7 @@
                        BorderBrush="AliceBlue"
                        Margin="5,0,0,5">
             <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}"
-                       Text="非终结符"
+                       Text="Nonterminators"
                        Name="NonterminalInfo"
                        Margin="20"/>
             <GridView Name="NonterminalViewer"
@@ -48,8 +48,8 @@
                                     DataContext="{x:Bind Token}">
                                 <Button.Flyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Text="删除" Click="DeleteNonterminal_Click"/>
-                                        <MenuFlyoutItem Text="起始非终结符" Click="SetStart_Click" />
+                                        <MenuFlyoutItem Text="Delete" Click="DeleteNonterminal_Click"/>
+                                        <MenuFlyoutItem Text="Set as Starter" Click="SetStart_Click" />
                                     </MenuFlyout>
                                 </Button.Flyout>
                             </Button>
@@ -58,14 +58,14 @@
                 </GridView.ItemTemplate>
             </GridView>
             <TextBox Name="NonterminalInputer"
-                         PlaceholderText="按'Enter'导入该非终结符"
+                         PlaceholderText="Press 'Enter' to import"
                          Margin="20" 
                          KeyDown="NonterminalInputer_KeyDown"
                          RelativePanel.AlignBottomWithPanel="True"
                          Width="200">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
-                        <TextBlock Text="非法输入" Foreground="DarkRed" />
+                        <TextBlock Text="Illegal Character Detected" Foreground="DarkRed" />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </TextBox>
@@ -76,14 +76,14 @@
                        BorderBrush="AliceBlue"
                        Margin="0,0,5,5">
             <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}"
-                           Text="终结符"
+                           Text="Terminators"
                            Name="TerminalInfo"
                            Margin="20"/>
             <Button Name="ToProduction"
                     FontFamily="Segoe MDL2 Assets"
                     Content="&#xE0AB;"
                     Background="White"
-                    Margin="10,0,20,0"
+                    Margin="10,0,80,0"
                     FontSize="24"
                     BorderThickness="0"
                     RelativePanel.AlignVerticalCenterWith="TerminalInfo"
@@ -93,22 +93,22 @@
                     <Flyout>
                         <RelativePanel>
                             <TextBlock Name="NoStartNonterminal"
-                                   Text="未设置起始非终结符"
+                                   Text="No Starter"
                                    Foreground="DarkRed"
                                    Visibility="Collapsed"/>
                             <TextBlock Name="NoNonterminal"
-                                   Text="没有非终结符"
+                                   Text="Nonterminators Empty"
                                    Foreground="DarkRed"
                                    Visibility="Collapsed"/>
                             <TextBlock Name="NoTerminal"
-                                   Text="没有终结符"
+                                   Text="Terminators Empty"
                                    Foreground="DarkRed"
                                    Visibility="Collapsed"/>
                         </RelativePanel>
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </Button>
-            <TextBlock Text="产生式"
+            <TextBlock Text="Derivations"
                        RelativePanel.Below="ToProduction"
                        RelativePanel.AlignLeftWith="ToProduction"
                        FontSize="18" />
@@ -117,13 +117,13 @@
                     FontFamily="Segoe MDL2 Assets"
                     Content="&#xF56E;"
                     Background="White"
-                    Margin="10,0,20,0"
+                    Margin="10,0,40,0"
                     FontSize="24"
                     BorderThickness="0"
                     RelativePanel.AlignVerticalCenterWith="TerminalInfo"
                     RelativePanel.LeftOf="ToProduction"
                     Click="ToLoad_Click"/>
-            <TextBlock Text="加载"
+            <TextBlock Text="Load"
                        RelativePanel.Below="ToLoad"
                        RelativePanel.AlignLeftWith="ToLoad"
                        FontSize="18"
@@ -150,7 +150,7 @@
                                     DataContext="{x:Bind Token}">
                                 <Button.Flyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Text="删除" Click="DeleteTerminal_Click" />
+                                        <MenuFlyoutItem Text="Delete" Click="DeleteTerminal_Click" />
                                     </MenuFlyout>
                                 </Button.Flyout>
                             </Button>
@@ -159,14 +159,14 @@
                 </GridView.ItemTemplate>
             </GridView>
             <TextBox Name="TerminalInputer"
-                         PlaceholderText="按'Enter'导入该终结符"
+                         PlaceholderText="Press 'Enter' to import"
                          Margin="20" 
                          RelativePanel.AlignBottomWithPanel="True"
                      KeyDown="TerminalInputer_KeyDown"
                          Width="200">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
-                        <TextBlock Text="非法输入" Foreground="DarkRed" />
+                        <TextBlock Text="Illegal Character Detected" Foreground="DarkRed" />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
             </TextBox>

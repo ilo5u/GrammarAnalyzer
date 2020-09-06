@@ -22,14 +22,14 @@
             </Grid.RowDefinitions>
 
             <RelativePanel Grid.Row="0">
-                <TextBlock Text="分析表"
+                <TextBlock Text="Analysis Sheet"
                            Style="{ThemeResource TitleTextBlockStyle}"
                            Name="SheetInfo"
                            Margin="10"/>
 
                 <TextBlock Name="CollisionInfo"
                            Style="{ThemeResource SubtitleTextBlockStyle}"
-                           Text="存在冲突表项"
+                           Text="Collision Existed"
                            Foreground="DarkRed"
                            Margin="10,10,10,10"
                            RelativePanel.AlignBottomWith="SheetInfo"
@@ -67,7 +67,7 @@
                     <FlyoutBase.AttachedFlyout>
                         <Flyout>
                             <TextBlock Foreground="DarkRed"
-                                       Text="分析表存在冲突"/>
+                                       Text="Collision Existed in Sheet"/>
 
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>
@@ -102,7 +102,7 @@
             </RelativePanel>
 
             <GridView Grid.Row="3"
-                      Header="记号"
+                      Header="Tokens"
                       Margin="10"
                       ItemsSource="{x:Bind Tokens}"
                       IsItemClickEnabled="True"
