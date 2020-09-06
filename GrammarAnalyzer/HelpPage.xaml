@@ -94,7 +94,38 @@
                 </Paragraph>
                 <Paragraph FontSize="16">
                     <Run FontSize="32" FontWeight="Medium">Production</Run> page accepts expressions like
-                    <Run FontStyle="Italic">S→α</Run> where α can be nonterminal or terminal or their combination and S represents a nonterminal. This page consists of four subpages, the top viewer showing the recorded productions, and the middle displaying the current production, the bottom divided into two parts with the left including all nonterminals and the right including terminals.
+                    <Run FontStyle="Italic">S→α</Run> where α can be nonterminal or terminal or their combination and S represents a nonterminal. This page consists of four subpages, the top viewer showing the recorded productions, and the middle displaying the current production, the bottom divided into two parts with the left including all nonterminals and the right including nonterminals/terminals within ε.
+                </Paragraph>
+                <Paragraph FontSize="16" Margin="0,5,0,0">
+                    <Run FontSize="24" FontStyle="Italic">1.</Run> Click left nonterminal-viewer to change the left starter, and right nonterminal/terminal-viewer to add them in order building the right
+                    <Run FontStyle="Italic">candidate</Run>. Notice that if the candidate contains ε, no more terminals could be added into the candidate.
+                </Paragraph>
+                <Paragraph FontSize="16" Margin="0,5,0,0">
+                    <Run FontSize="24" FontStyle="Italic">2.</Run> When the current production is ready, click
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;"/>
+                    </InlineUIContainer> in the middle to add it into records. If you add a wrong production into records or
+                    <Run FontStyle="Italic">token</Run> (nonterminal or terminal or ε) into candidate, click it and select delete option.
+                </Paragraph>
+                <Paragraph FontSize="16" Margin="0,5,0,0">
+                    <Run FontSize="24" FontStyle="Italic">3.</Run> When all productions are prepared, click
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AB;"/>
+                    </InlineUIContainer>
+                    <Run FontStyle="Italic">LL(1), SLR(1), LR(1)</Run> to build analysis sheet in corresponding syntax. Notice that productions should not contains useless tokens. For example, considering productions as
+                    <Run FontStyle="Italic">A→a B→b</Run> , where
+                    <Run FontStyle="Italic">A</Run> and
+                    <Run FontStyle="Italic">B</Run> are nonterminals with
+                    <Run FontStyle="Italic">a</Run> and
+                    <Run FontStyle="Italic">b</Run> as terminals. Obviously,
+                    <Run FontStyle="Italic">A</Run> can not reach
+                    <Run FontStyle="Italic">b</Run> if we consider production representations as a undirected graph. Thus, we need to make sure that the production representations equal to its corresponding connected undirected graph.
+                </Paragraph>
+                <Paragraph FontSize="16" Margin="0,5,0,0">
+                    <Run FontSize="24" FontStyle="Italic">4.</Run> Moreover, click
+                    <InlineUIContainer>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE118;"/>
+                    </InlineUIContainer> to store current grammar locally when needed.
                 </Paragraph>
             </RichTextBlock>
         </StackPanel>
