@@ -24,11 +24,11 @@
                        BorderBrush="AliceBlue"
                        Margin="5,0,0,5">
             <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}"
-                       Text="Nonterminators"
-                       Name="NonterminalInfo"
+                       Text="Nonterminals"
+                       Name="SetOfNonterminals"
                        Margin="20"/>
             <GridView Name="NonterminalViewer"
-                      RelativePanel.Below="NonterminalInfo"
+                      RelativePanel.Below="SetOfNonterminals"
                       HorizontalAlignment="Stretch"
                       ItemsSource="{x:Bind Nonterminals}">
                 <GridView.ItemTemplate>
@@ -37,7 +37,7 @@
                             <TextBlock FontFamily="Consolas"
                                            FontSize="22" 
                                            Text="{x:Bind Token}"
-                                           Width="48"
+                                           Width="auto"
                                            RelativePanel.RightOf="NonterminalConfig"
                                            RelativePanel.AlignVerticalCenterWith="NonterminalConfig"/>
                             <Button Name="NonterminalConfig"
@@ -58,11 +58,11 @@
                 </GridView.ItemTemplate>
             </GridView>
             <TextBox Name="NonterminalInputer"
-                         PlaceholderText="Press 'Enter' to import"
+                         PlaceholderText="Press 'Enter' to import nonterminal"
                          Margin="20" 
                          KeyDown="NonterminalInputer_KeyDown"
                          RelativePanel.AlignBottomWithPanel="True"
-                         Width="200">
+                         Width="auto">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
                         <TextBlock Text="Illegal Character Detected" Foreground="DarkRed" />
@@ -76,9 +76,19 @@
                        BorderBrush="AliceBlue"
                        Margin="0,0,5,5">
             <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}"
-                           Text="Terminators"
+                           Text="Terminals"
                            Name="TerminalInfo"
                            Margin="20"/>
+            
+            <!--
+            <CheckBox Name="HasEpsilon"
+                      RelativePanel.RightOf="TerminalInfo"
+                      RelativePanel.AlignVerticalCenterWith="TerminalInfo"
+                      FontSize="18"
+                      Content="Contains Epsilon?"
+                      Checked="HasEpsilon_Checked"
+                      Unchecked="HasEpsilon_Unchecked"></CheckBox>
+            -->
             <Button Name="ToProduction"
                     FontFamily="Segoe MDL2 Assets"
                     Content="&#xE0AB;"
@@ -139,7 +149,7 @@
                             <TextBlock FontFamily="Consolas"
                                            FontSize="22" 
                                            Text="{x:Bind Token}"
-                                           Width="48"
+                                           Width="auto"
                                            RelativePanel.RightOf="TerminalConfig"
                                            RelativePanel.AlignVerticalCenterWith="TerminalConfig"/>
                             <Button Name="TerminalConfig"
@@ -159,11 +169,11 @@
                 </GridView.ItemTemplate>
             </GridView>
             <TextBox Name="TerminalInputer"
-                         PlaceholderText="Press 'Enter' to import"
+                         PlaceholderText="Press 'Enter' to import terminal"
                          Margin="20" 
                          RelativePanel.AlignBottomWithPanel="True"
                      KeyDown="TerminalInputer_KeyDown"
-                         Width="200">
+                         Width="auto">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
                         <TextBlock Text="Illegal Character Detected" Foreground="DarkRed" />

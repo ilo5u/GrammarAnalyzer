@@ -50,7 +50,7 @@ namespace GrammarAnalyzer
         public ObservableCollection<ProductionViewer> ProductionsLoadByLocal = null;
         public ObservableCollection<TokenViewer> Terminals = new ObservableCollection<TokenViewer>();
         public ObservableCollection<TokenViewer> Nonterminals = new ObservableCollection<TokenViewer>();
-        public TokenViewer StartNonterminal = null;
+        public TokenViewer StartSymbol = null;
 
         private void NonterminalInputer_KeyDown(object sender, KeyRoutedEventArgs e)
         {
@@ -189,26 +189,26 @@ namespace GrammarAnalyzer
         private void SetStart_Click(object sender, RoutedEventArgs e)
         {
             string nonterminal = (string)(((MenuFlyoutItem)sender).DataContext);
-            if (StartNonterminal != null)
+            if (StartSymbol != null)
             {
-                Nonterminals.Remove(Nonterminals.First(elem => elem.Token == StartNonterminal.Token));
+                Nonterminals.Remove(Nonterminals.First(elem => elem.Token == StartSymbol.Token));
                 // reset the past starter
                 Nonterminals.Add(new TokenViewer
                 {
-                    Token = StartNonterminal.Token,
+                    Token = StartSymbol.Token,
                     IsStart = false,
                     Type = TokenType.Nonterminal
                 });
             }
             // reset the current starter
             Nonterminals.Remove(Nonterminals.First(elem => elem.Token == nonterminal));
-            StartNonterminal = new TokenViewer
+            StartSymbol = new TokenViewer
             {
                 Token = nonterminal,
                 IsStart = true,
                 Type = TokenType.Nonterminal
             };
-            Nonterminals.Add(StartNonterminal);
+            Nonterminals.Add(StartSymbol);
         }
 
         private void DeleteTerminal_Click(object sender, RoutedEventArgs e)
@@ -239,7 +239,7 @@ namespace GrammarAnalyzer
                     FlyoutBase.ShowAttachedFlyout(illegaltokens);
                 }
             }
-            else if (StartNonterminal == null)
+            else if (StartSymbol == null)
             {
                 if (sender is FrameworkElement illegaltokens)
                 {
@@ -321,7 +321,7 @@ namespace GrammarAnalyzer
         {
             Nonterminals.Clear();
             Terminals.Clear();
-            StartNonterminal = null;
+            StartSymbol = null;
             foreach (var item in nonterminals)
             {
                 Nonterminals.Add(new TokenViewer
@@ -350,8 +350,8 @@ namespace GrammarAnalyzer
             {
                 if (item.Token.Equals(start))
                 {
-                    StartNonterminal = item;
-                    StartNonterminal.IsStart = true;
+                    StartSymbol = item;
+                    StartSymbol.IsStart = true;
                 }
             }
 
@@ -390,15 +390,15 @@ namespace GrammarAnalyzer
 
             if (Nonterminals.Count == 0
                 || Terminals.Count == 0
-                || StartNonterminal == null
+                || StartSymbol == null
                 || ProductionsLoadByLocal == null)
             {
                 Nonterminals.Clear();
                 Terminals.Clear();
-                StartNonterminal = null;
+                StartSymbol = null;
 
-                MessageDialog error = new MessageDialog("文件读取失败") { Title = "错误" };
-                error.Commands.Add(new UICommand("确定"));
+                MessageDialog error = new MessageDialog("Failed to Load File !") { Title = "Error" };
+                error.Commands.Add(new UICommand("OK"));
                 await error.ShowAsync();
             }
             else
@@ -406,5 +406,15 @@ namespace GrammarAnalyzer
                 this.Frame.Navigate(typeof(ProductionPage), Nonterminals.Concat(Terminals));
             }
         }
+
+        //private void HasEpsilon_Checked(object sender, RoutedEventArgs e)
+        //{
+
+        //}
+
+        //private void HasEpsilon_Unchecked(object sender, RoutedEventArgs e)
+        //{
+
+        //}
     }
 }
